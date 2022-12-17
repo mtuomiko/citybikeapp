@@ -1,0 +1,22 @@
+micronaut:
+  application:
+    name: citybikeapp
+datasources:
+  default:
+    url: jdbc:postgresql://localhost:5432/citybikeapp
+    username: postgres
+    password: Hunter2
+    driverClassName: org.postgresql.Driver
+    db-type: postgres
+    dialect: POSTGRES
+    schema-generate: NONE
+    schema: citybikeapp
+netty:
+  default:
+    allocator:
+      max-order: 3
+flyway:
+  datasources:
+    default:
+      enabled: true
+      defaultSchema: citybikeapp

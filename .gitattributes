@@ -1,0 +1,4 @@
+# Handle line endings. Committed text files will have Unix style.
+*       text=auto
+# Don't touch gradlew script files, conversion can break the script
+gradlew text eol=lf
