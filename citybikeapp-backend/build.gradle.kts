@@ -1,5 +1,6 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 import io.gitlab.arturbosch.detekt.Detekt
+import io.micronaut.gradle.docker.MicronautDockerfile
 
 plugins {
     id("org.jetbrains.kotlin.jvm").version("1.6.21")
@@ -25,6 +26,9 @@ dependencies {
     kapt("io.micronaut:micronaut-http-validation")
     kapt("io.micronaut.openapi:micronaut-openapi")
     kapt("io.micronaut.serde:micronaut-serde-processor")
+    kapt("info.picocli:picocli-codegen")
+    implementation("info.picocli:picocli")
+    implementation("io.micronaut.picocli:micronaut-picocli")
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut:micronaut-management")
     implementation("io.micronaut.data:micronaut-data-jdbc")
@@ -46,6 +50,7 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers")
     implementation("io.micronaut:micronaut-validation")
 
+    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.7.0")
     implementation("io.github.microutils:kotlin-logging-jvm:2.1.23") // match logback version
 
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -95,7 +100,7 @@ detekt {
 
 tasks.withType<Detekt>().configureEach {
     jvmTarget = "17"
-    reports {
+    reports { // failure and console output enough for now
         xml.required.set(false)
         html.required.set(false)
         txt.required.set(false)
@@ -117,4 +122,8 @@ configure<SpotlessExtension> {
         target("**/*.gradle.kts")
         ktlint("0.47.1")
     }
+}
+
+tasks.named<MicronautDockerfile>("dockerfile") {
+    baseImage.set("eclipse-temurin:17.0.5_8-jre-alpine")
 }

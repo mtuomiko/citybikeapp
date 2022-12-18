@@ -18,16 +18,14 @@ data class StationEntity(
     val nameEnglish: String,
     val addressFinnish: String,
     val addressSwedish: String,
-    val cityFinnish: String? = null,
-    val citySwedish: String? = null,
-    val operator: String? = null,
+    val cityFinnish: String,
+    val citySwedish: String,
+    val operator: String,
     val capacity: Int,
     val longitude: Double,
-    val latitude: Double
-) {
+    val latitude: Double,
     @field:DateUpdated
-    lateinit var modifiedAt: Instant
-
+    val modifiedAt: Instant? = null,
     @field:DateCreated
-    lateinit var createdAt: Instant
-}
+    val createdAt: Instant? = null
+)

@@ -7,9 +7,9 @@ class StationBuilder {
     var nameEnglish: String = "Some Place"
     var addressFinnish: String = "Katukatu 8"
     var addressSwedish: String = "Gatagatan 8"
-    var cityFinnish: String? = null
-    var citySwedish: String? = null
-    var operator: String? = null
+    var cityFinnish: String = "Kaupunni"
+    var citySwedish: String = "Stad"
+    var operator: String = "BOFH"
     var capacity: Int = 10
     var longitude: Double = 24.9897538768656
     var latitude: Double = 60.2807560752423
