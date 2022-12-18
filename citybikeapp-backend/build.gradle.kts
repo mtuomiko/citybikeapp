@@ -48,6 +48,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:testcontainers")
+
     implementation("io.micronaut:micronaut-validation")
 
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.7.0")

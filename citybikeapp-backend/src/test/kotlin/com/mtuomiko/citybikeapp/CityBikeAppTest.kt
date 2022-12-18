@@ -7,11 +7,10 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 @MicronautTest
-class CityBikeAppTest {
-
+class CityBikeAppTest(
     @Inject
-    lateinit var application: EmbeddedApplication<*>
-
+    val application: EmbeddedApplication<*>
+) {
     @Test
     fun `Application can be run`() {
         Assertions.assertTrue(application.isRunning)

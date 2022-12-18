@@ -8,18 +8,13 @@ import com.mtuomiko.citybikeapp.model.StationNew
 import jakarta.inject.Inject
 import mu.KotlinLogging
 import picocli.CommandLine.Command
-import java.net.URL
-import java.nio.file.Files
-import java.nio.file.Path
+import java.io.InputStream
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeParseException
-import kotlin.io.path.createDirectories
-import kotlin.io.path.inputStream
 
 private val logger = KotlinLogging.logger {}
 
-private const val DOWNLOAD_DIR = "temp"
 private const val TIMEZONE_ID = "Europe/Helsinki" // assuming data timestamps to be local Helsinki time
 private val CHARS_TO_TRIM = arrayOf(' ', ',', '"')
 
@@ -37,14 +32,14 @@ class DataLoader : Runnable {
     @Inject
     private lateinit var journeyRepository: JourneyRepository
 
-    private val directoryPath = Path.of(DOWNLOAD_DIR)
+    @Inject
+    private lateinit var fileProvider: FileProvider
+
     private val reader = csvReader()
     private val timezone = ZoneId.of(TIMEZONE_ID)
     private lateinit var validStationIds: List<Int>
 
     override fun run() {
-        directoryPath.createDirectories()
-
         logger.info { "Starting data load" }
 
         processStations(config.stationUrl)
@@ -57,10 +52,9 @@ class DataLoader : Runnable {
     private fun processStations(url: String) {
         logger.info { "Processing station URL $url" }
 
-        val path = directoryPath.resolve(getFilename(url))
-        if (!Files.exists(path)) downloadToPath(url, path)
+        val inputStream = fileProvider.getLocalInputStream(url)
 
-        val count = operateOnCSVChunks(path) { sequence ->
+        val count = operateOnCSVChunks(inputStream) { sequence ->
             sequence
                 .map { chunk -> chunk.mapNotNull { parseStation(it) } }
                 .map { stationRepository.saveInBatch(it) }
@@ -74,10 +68,9 @@ class DataLoader : Runnable {
         urls.forEach { url ->
             logger.info { "Processing journey URL $url" }
 
-            val path = directoryPath.resolve(getFilename(url))
-            if (!Files.exists(path)) downloadToPath(url, path)
+            val inputStream = fileProvider.getLocalInputStream(url)
 
-            count += operateOnCSVChunks(path) { sequence ->
+            count += operateOnCSVChunks(inputStream) { sequence ->
                 sequence
                     .map { chunk ->
                         chunk.mapNotNull { parseJourney(it) }.filter { isJourneyValid(it) }
@@ -89,10 +82,8 @@ class DataLoader : Runnable {
         logger.info { "$count journeys loaded" }
     }
 
-    private fun getFilename(url: String) = url.split('/').last()
-
-    private fun operateOnCSVChunks(path: Path, action: (Sequence<List<Map<String, String>>>) -> Int): Int =
-        reader.open(path.inputStream()) {
+    private fun operateOnCSVChunks(input: InputStream, action: (Sequence<List<Map<String, String>>>) -> Int): Int =
+        reader.open(input) {
             action(readAllWithHeaderAsSequence().chunked(config.batchSize))
         }
 
@@ -101,13 +92,6 @@ class DataLoader : Runnable {
             journey.duration >= config.minimumJourneyDuration &&
             journey.departureStation in validStationIds &&
             journey.returnStation in validStationIds
-
-    private fun downloadToPath(url: String, path: Path) {
-        logger.info { "Downloading $url to $path" }
-        URL(url).openStream().use {
-            Files.copy(it, path)
-        }
-    }
 
     private fun parseStation(entry: Map<String, String>) = parseIgnoringMalformedData {
         StationNew(

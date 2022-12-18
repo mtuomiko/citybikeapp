@@ -19,8 +19,8 @@ object Application {
     @JvmStatic
     fun main(args: Array<String>) {
         if (args.isNotEmpty() && args[0] == "dataloader") {
-            val emptyArgs = arrayOf<String>() // picocli loader not configured for any actual arguments
-            PicocliRunner.run(DataLoader::class.java, *emptyArgs)
+            // picocli is not configured to handle "dataloader" arg so not passing anything
+            PicocliRunner.run(DataLoader::class.java)
         } else {
             run(*args)
         }

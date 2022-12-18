@@ -8,7 +8,6 @@ endpoints:
     enabled: true
 datasources:
   default:
-#    url: jdbc:postgresql://localhost:5432/citybikeapp
     url: jdbc:postgresql://host.docker.internal:5432/citybikeapp
     username: postgres
     password: Hunter2
@@ -31,11 +30,11 @@ citybikeapp:
     batchSize: 1000
     minimumJourneyDistance: 10
     minimumJourneyDuration: 10
-    stationUrl: 'https://opendata.arcgis.com/datasets/726277c507ef4914b0aec3cbcfcbfafc_0.csv'
-    journeyUrls:
-      - 'https://dev.hsl.fi/citybikes/od-trips-2021/2021-05.csv'
-      - 'https://dev.hsl.fi/citybikes/od-trips-2021/2021-06.csv'
-      - 'https://dev.hsl.fi/citybikes/od-trips-2021/2021-07.csv'
+    stationUrl: https://opendata.arcgis.com/datasets/726277c507ef4914b0aec3cbcfcbfafc_0.csv
+    journeyUrls: >-
+      https://dev.hsl.fi/citybikes/od-trips-2021/2021-05.csv,
+      https://dev.hsl.fi/citybikes/od-trips-2021/2021-06.csv,
+      https://dev.hsl.fi/citybikes/od-trips-2021/2021-07.csv
 logger:
   levels:
     com:
@@ -44,4 +43,3 @@ logger:
 #    io:
 #      micronaut: TRACE
 #        data: DEBUG
-
