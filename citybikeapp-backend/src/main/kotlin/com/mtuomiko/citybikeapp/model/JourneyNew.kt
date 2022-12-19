@@ -2,7 +2,7 @@ package com.mtuomiko.citybikeapp.model
 
 import java.time.Instant
 
-class JourneyNew(
+data class JourneyNew(
     val departureAt: Instant,
     val returnAt: Instant,
     val departureStation: Int,

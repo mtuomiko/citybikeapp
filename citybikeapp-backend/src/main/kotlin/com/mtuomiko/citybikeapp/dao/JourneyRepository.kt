@@ -1,6 +1,8 @@
 package com.mtuomiko.citybikeapp.dao
 
 import com.mtuomiko.citybikeapp.model.JourneyNew
+import io.micronaut.data.annotation.Join
+import io.micronaut.data.annotation.repeatable.JoinSpecifications
 import io.micronaut.data.jdbc.annotation.JdbcRepository
 import io.micronaut.data.jdbc.runtime.JdbcOperations
 import io.micronaut.data.repository.PageableRepository
@@ -8,6 +10,10 @@ import java.sql.Timestamp
 import javax.transaction.Transactional
 
 @JdbcRepository
+@JoinSpecifications(
+    Join(value = "departureStation"),
+    Join(value = "returnStation")
+)
 abstract class JourneyRepository(private val jdbcOperations: JdbcOperations) : PageableRepository<JourneyEntity, Long> {
 
     @Suppress("MagicNumber")
