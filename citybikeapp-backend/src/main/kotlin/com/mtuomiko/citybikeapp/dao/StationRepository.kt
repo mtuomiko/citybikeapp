@@ -16,27 +16,28 @@ abstract class StationRepository(
 
     @Suppress("MagicNumber")
     @Transactional
-    fun saveInBatch(stations: List<StationNew>): Int {
+    fun saveInBatch(stations: List<StationNew>) {
         val now = instantSource.instant()
         val sql = """
-            INSERT INTO "station" (
-                "id",
-                "name_finnish",
-                "name_swedish",
-                "name_english",
-                "address_finnish",
-                "address_swedish",
-                "city_finnish",
-                "city_swedish",
-                "operator",
-                "capacity",
-                "longitude",
-                "latitude",
-                "modified_at",
-                "created_at"
+            INSERT INTO station (
+                id,
+                name_finnish,
+                name_swedish,
+                name_english,
+                address_finnish,
+                address_swedish,
+                city_finnish,
+                city_swedish,
+                operator,
+                capacity,
+                longitude,
+                latitude,
+                modified_at,
+                created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO NOTHING;
         """.trimIndent()
-        return jdbcOperations.prepareStatement(sql) { ps ->
+        jdbcOperations.prepareStatement(sql) { ps ->
             stations.forEach {
                 ps.setInt(1, it.id!!)
                 ps.setString(2, it.nameFinnish)
@@ -54,8 +55,7 @@ abstract class StationRepository(
                 ps.setTimestamp(14, Timestamp.from(now))
                 ps.addBatch()
             }
-            val resultArray = ps.executeBatch()
-            resultArray.size
+            ps.executeBatch()
         }
     }
 }

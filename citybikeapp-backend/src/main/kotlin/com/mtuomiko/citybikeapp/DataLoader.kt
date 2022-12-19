@@ -8,7 +8,6 @@ import com.mtuomiko.citybikeapp.model.StationNew
 import jakarta.inject.Inject
 import mu.KotlinLogging
 import picocli.CommandLine.Command
-import java.io.InputStream
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeParseException
@@ -54,38 +53,32 @@ class DataLoader : Runnable {
 
         val inputStream = fileProvider.getLocalInputStream(url)
 
-        val count = operateOnCSVChunks(inputStream) { sequence ->
-            sequence
+        reader.open(inputStream) {
+            readAllWithHeaderAsSequence()
+                .chunked(config.batchSize)
                 .map { chunk -> chunk.mapNotNull { parseStation(it) } }
-                .map { stationRepository.saveInBatch(it) }
-                .reduce { sum, count -> sum + count }
+                .forEach { stationRepository.saveInBatch(it) }
         }
-        logger.info { "$count stations loaded" }
+        logger.info { "Stations loaded" }
     }
 
     private fun processJourneys(urls: List<String>) {
-        var count = 0L
         urls.forEach { url ->
             logger.info { "Processing journey URL $url" }
 
             val inputStream = fileProvider.getLocalInputStream(url)
 
-            count += operateOnCSVChunks(inputStream) { sequence ->
-                sequence
+            reader.open(inputStream) {
+                readAllWithHeaderAsSequence()
+                    .chunked(config.batchSize)
                     .map { chunk ->
                         chunk.mapNotNull { parseJourney(it) }.filter { isJourneyValid(it) }
                     }
-                    .map { journeyRepository.saveInBatch(it) }
-                    .reduce { sum, count -> sum + count }
+                    .forEach { journeyRepository.saveInBatch(it) }
             }
         }
-        logger.info { "$count journeys loaded" }
+        logger.info { "Journeys loaded" }
     }
-
-    private fun operateOnCSVChunks(input: InputStream, action: (Sequence<List<Map<String, String>>>) -> Int): Int =
-        reader.open(input) {
-            action(readAllWithHeaderAsSequence().chunked(config.batchSize))
-        }
 
     private fun isJourneyValid(journey: JourneyNew) =
         journey.distance >= config.minimumJourneyDistance &&

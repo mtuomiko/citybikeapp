@@ -12,18 +12,19 @@ abstract class JourneyRepository(private val jdbcOperations: JdbcOperations) : P
 
     @Suppress("MagicNumber")
     @Transactional
-    fun saveInBatch(journeys: List<JourneyNew>): Int {
-        val sql = """
-            INSERT INTO "journey" (
-                "departure_at",
-                "return_at",
-                "departure_station_id",
-                "return_station_id",
-                "distance",
-                "duration"
+    fun saveInBatch(journeys: List<JourneyNew>) {
+        val duplicateIgnoringInsertSQL = """
+            INSERT INTO journey (
+                departure_at,
+                return_at,
+                departure_station_id,
+                return_station_id,
+                distance,
+                duration
             ) VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT ON CONSTRAINT journey_content_unique DO NOTHING;
         """.trimIndent()
-        return jdbcOperations.prepareStatement(sql) { ps ->
+        jdbcOperations.prepareStatement(duplicateIgnoringInsertSQL) { ps ->
             journeys.forEach {
                 ps.setTimestamp(1, Timestamp.from(it.departureAt))
                 ps.setTimestamp(2, Timestamp.from(it.returnAt))
@@ -33,8 +34,7 @@ abstract class JourneyRepository(private val jdbcOperations: JdbcOperations) : P
                 ps.setInt(6, it.duration)
                 ps.addBatch()
             }
-            val resultArray = ps.executeBatch()
-            resultArray.size
+            ps.executeBatch()
         }
     }
 }

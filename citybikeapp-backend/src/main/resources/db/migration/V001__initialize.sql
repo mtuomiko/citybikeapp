@@ -5,9 +5,9 @@ CREATE TABLE station (
     name_english    text             NOT NULL,
     address_finnish text             NOT NULL,
     address_swedish text             NOT NULL,
-    city_finnish    text,
-    city_swedish    text,
-    operator        text,
+    city_finnish    text             NOT NULL,
+    city_swedish    text             NOT NULL,
+    operator        text             NOT NULL,
     capacity        smallint         NOT NULL,
     longitude       double precision NOT NULL,
     latitude        double precision NOT NULL,
@@ -24,3 +24,7 @@ CREATE TABLE journey (
     distance             integer     NOT NULL,
     duration             integer     NOT NULL
 );
+
+ALTER TABLE journey ADD CONSTRAINT journey_content_unique UNIQUE (
+    departure_at, return_at, departure_station_id, return_station_id, distance, duration
+)
