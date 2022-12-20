@@ -1,5 +1,6 @@
 package com.mtuomiko.citybikeapp.dao
 
+import com.mtuomiko.citybikeapp.dao.entity.StationEntity
 import com.mtuomiko.citybikeapp.model.StationNew
 import io.micronaut.data.jdbc.annotation.JdbcRepository
 import io.micronaut.data.jdbc.runtime.JdbcOperations

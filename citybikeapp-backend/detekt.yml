@@ -1,1 +1,11 @@
 # custom rule configurations
+
+style:
+  ForbiddenComment:
+    active: false
+    values:
+      - 'FIXME:'
+      - 'STOPSHIP:'
+      - 'TODO:'
+    allowedPatterns: ''
+    customMessage: ''

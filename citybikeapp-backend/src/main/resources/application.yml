@@ -3,6 +3,9 @@ micronaut:
     port: ${PORT:8080}
   application:
     name: citybikeapp
+  serde:
+    serialization:
+      inclusion: NON_ABSENT
 endpoints:
   all:
     enabled: false

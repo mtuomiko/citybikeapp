@@ -8,9 +8,11 @@ import com.mtuomiko.citybikeapp.model.StationNew
 import jakarta.inject.Inject
 import mu.KotlinLogging
 import picocli.CommandLine.Command
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeParseException
+import kotlin.system.measureTimeMillis
 
 private val logger = KotlinLogging.logger {}
 
@@ -41,11 +43,13 @@ class DataLoader : Runnable {
     override fun run() {
         logger.info { "Starting data load" }
 
-        processStations(config.stationUrl)
-        validStationIds = stationRepository.findAll().map { it.id }
-        processJourneys(config.journeyUrls)
-
-        logger.info { "Data load complete" }
+        val millis = measureTimeMillis {
+            processStations(config.stationUrl)
+            validStationIds = stationRepository.findAll().map { it.id }
+            processJourneys(config.journeyUrls)
+        }
+        val duration = Duration.ofMillis(millis)
+        logger.info { "Data load complete in ${duration.toMinutes()}m and ${duration.toSecondsPart()}s" }
     }
 
     private fun processStations(url: String) {
@@ -84,7 +88,7 @@ class DataLoader : Runnable {
         journey.distance >= config.minimumJourneyDistance &&
             journey.duration >= config.minimumJourneyDuration &&
             journey.departureStation in validStationIds &&
-            journey.returnStation in validStationIds
+            journey.arrivalStation in validStationIds
 
     private fun parseStation(entry: Map<String, String>) = parseIgnoringMalformedData {
         StationNew(
@@ -106,9 +110,9 @@ class DataLoader : Runnable {
     private fun parseJourney(entry: Map<String, String>) = parseIgnoringMalformedData {
         JourneyNew(
             departureAt = LocalDateTime.parse(entry["Departure"]!!).atZone(timezone).toInstant(),
-            returnAt = LocalDateTime.parse(entry["Return"]!!).atZone(timezone).toInstant(),
+            arrivalAt = LocalDateTime.parse(entry["Return"]!!).atZone(timezone).toInstant(),
             departureStation = entry["Departure station id"]!!.toInt(),
-            returnStation = entry["Return station id"]!!.toInt(),
+            arrivalStation = entry["Return station id"]!!.toInt(),
             distance = entry["Covered distance (m)"]!!.toDouble().toInt(),
             duration = entry["Duration (sec.)"]!!.toDouble().toInt()
         )

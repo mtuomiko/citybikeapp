@@ -1,4 +1,4 @@
-package com.mtuomiko.citybikeapp.dao
+package com.mtuomiko.citybikeapp.dao.entity
 
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.annotation.Relation
@@ -14,13 +14,13 @@ data class JourneyEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
     val departureAt: Instant,
-    val returnAt: Instant,
+    val arrivalAt: Instant,
     @Relation(value = Relation.Kind.MANY_TO_ONE)
     @Column(name = "departure_station_id")
     val departureStation: StationEntity,
     @Relation(value = Relation.Kind.MANY_TO_ONE)
-    @Column(name = "return_station_id")
-    val returnStation: StationEntity,
+    @Column(name = "arrival_station_id")
+    val arrivalStation: StationEntity,
     val distance: Int,
     val duration: Int
 )

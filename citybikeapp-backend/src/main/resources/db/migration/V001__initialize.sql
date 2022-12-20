@@ -18,13 +18,16 @@ CREATE TABLE station (
 CREATE TABLE journey (
     id                   bigint      PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     departure_at         timestamptz NOT NULL,
-    return_at            timestamptz NOT NULL,
+    arrival_at           timestamptz NOT NULL,
     departure_station_id integer     NOT NULL REFERENCES station,
-    return_station_id    integer     NOT NULL REFERENCES station,
+    arrival_station_id   integer     NOT NULL REFERENCES station,
     distance             integer     NOT NULL,
     duration             integer     NOT NULL
 );
 
 ALTER TABLE journey ADD CONSTRAINT journey_content_unique UNIQUE (
-    departure_at, return_at, departure_station_id, return_station_id, distance, duration
-)
+    departure_at, arrival_at, departure_station_id, arrival_station_id, distance, duration
+);
+
+CREATE INDEX journey_departure_station_id_idx ON journey (departure_station_id);
+CREATE INDEX journey_arrival_station_id_idx ON journey (arrival_station_id);

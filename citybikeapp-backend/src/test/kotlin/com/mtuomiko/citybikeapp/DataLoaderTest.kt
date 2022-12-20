@@ -46,11 +46,10 @@ class DataLoaderTest {
 @Replaces(FileProvider::class)
 @Singleton
 class MockFileProvider : FileProvider {
-    override fun getLocalInputStream(url: String): InputStream {
-        return when (url) {
-            stationDummyUrl -> return ClassLoader.getSystemResource("stations.csv").openStream()
-            in splitJourneyUrls -> return ClassLoader.getSystemResource("journeys.csv").openStream()
+    override fun getLocalInputStream(url: String): InputStream =
+        when (url) {
+            stationDummyUrl -> ClassLoader.getSystemResource("stations.csv").openStream()
+            in splitJourneyUrls -> ClassLoader.getSystemResource("journeys.csv").openStream()
             else -> throw Exception("no preset source for $url")
         }
-    }
 }

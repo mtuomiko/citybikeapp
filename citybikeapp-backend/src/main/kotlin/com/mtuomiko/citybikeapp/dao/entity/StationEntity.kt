@@ -1,4 +1,4 @@
-package com.mtuomiko.citybikeapp.dao
+package com.mtuomiko.citybikeapp.dao.entity
 
 import io.micronaut.data.annotation.DateCreated
 import io.micronaut.data.annotation.DateUpdated

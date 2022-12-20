@@ -6,13 +6,13 @@ Application can be started in a single run data loading mode by providing the co
 this mode, the actual server will not be started and the application will exit after completion.
 
 Data loader will read the provided configuration and download CSV files to batch insert their data to the database.
-Loader doesn't currently delete loaded files which is nice for development. Note that downloaded data will remain in
+Loader **doesn't currently delete loaded files** which is nice for development. Note that downloaded data will remain in
 containers also.
 
 Loader will perform simple validation and cleaning on the data. Anything not matching the assumed format or data model
 will cause the entry to be ignored. Duplicate entries are ignored. For stations the primary key ID is pulled straight
 from source CSV and subsequent INSERTs on same ID is ignored. For journeys the uniqueness in maintained by an all column
-unique constraint/index, a bit doubtful about this...
+unique constraint/index, a bit doubtful about this... (temp table on insert could work also?)
 
 Example for running data loader: `./gradlew run --args "dataloader"`
 

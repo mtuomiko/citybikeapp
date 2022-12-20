@@ -1,5 +1,6 @@
 package com.mtuomiko.citybikeapp.dao
 
+import com.mtuomiko.citybikeapp.dao.entity.StationEntity
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

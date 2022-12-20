@@ -4,9 +4,9 @@ import java.time.Instant
 
 data class JourneyNew(
     val departureAt: Instant,
-    val returnAt: Instant,
+    val arrivalAt: Instant,
     val departureStation: Int,
-    val returnStation: Int,
+    val arrivalStation: Int,
     val distance: Int,
     val duration: Int
 )

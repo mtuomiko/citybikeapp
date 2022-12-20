@@ -1,5 +1,7 @@
 package com.mtuomiko.citybikeapp.dao
 
+import com.mtuomiko.citybikeapp.dao.entity.StationEntity
+
 class StationBuilder {
     var id: Int = 0
     var nameFinnish: String = "Joku Paikka"
