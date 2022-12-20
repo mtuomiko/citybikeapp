@@ -10,7 +10,7 @@ class JourneyRepositoryTest(
     private val journeyRepository: JourneyRepository
 ) {
     /**
-     * TODO: Add test data
+     * TODO: Add test data generation for meaningful testing
      */
     @Test
     fun `Trip statistics query can be run`() {
