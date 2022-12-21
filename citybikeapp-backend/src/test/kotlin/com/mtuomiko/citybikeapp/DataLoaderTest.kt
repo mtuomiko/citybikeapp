@@ -5,21 +5,19 @@ import com.mtuomiko.citybikeapp.dao.StationRepository
 import io.micronaut.configuration.picocli.PicocliRunner
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.annotation.Property
-import io.micronaut.context.annotation.Replaces
+import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.io.InputStream
 
 private const val stationDummyUrl = "stationDummyUrl"
-private const val journeysDummyUrl = "journeyDummyUrl1,journeyDummyUrl2,journeyDummyUrl3"
-private val splitJourneyUrls = journeysDummyUrl.split(',')
+private const val journeysDummyUrls = "journeyDummyUrl1,journeyDummyUrl2,journeyDummyUrl3"
 
 @MicronautTest
 @Property(name = "citybikeapp.dataLoader.stationUrl", value = stationDummyUrl)
-@Property(name = "citybikeapp.dataLoader.journeyUrls", value = journeysDummyUrl)
+@Property(name = "citybikeapp.dataLoader.journeyUrls", value = journeysDummyUrls)
 class DataLoaderTest {
 
     @Inject
@@ -41,15 +39,24 @@ class DataLoaderTest {
         assertThat(allJourneys).hasSize(8)
         assertThat(allStations).hasSize(10)
     }
+
+    @MockBean(FileProvider::class) // using MockBean for test class scope
+    private fun fileProvider(): FileProvider {
+        return MockFileProvider()
+    }
 }
 
-@Replaces(FileProvider::class)
-@Singleton
 class MockFileProvider : FileProvider {
+    private val splitJourneyUrls = journeysDummyUrls.split(',')
+
     override fun getLocalInputStream(url: String): InputStream =
         when (url) {
             stationDummyUrl -> ClassLoader.getSystemResource("stations.csv").openStream()
             in splitJourneyUrls -> ClassLoader.getSystemResource("journeys.csv").openStream()
             else -> throw Exception("no preset source for $url")
         }
+
+    override fun deleteFiles() {
+        // NOOP
+    }
 }

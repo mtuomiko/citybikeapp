@@ -1,6 +1,6 @@
 package com.mtuomiko.citybikeapp.api
 
-import com.mtuomiko.citybikeapp.model.StationLimited
+import com.mtuomiko.citybikeapp.model.TopStation
 import io.micronaut.serde.annotation.Serdeable
 
 @Serdeable
@@ -26,6 +26,6 @@ class StationStatistics(
     val arrivalCount: Long,
     val departureJourneyAverageDistance: Double,
     val arrivalJourneyAverageDistance: Double,
-    val topStationsForArrivals: List<StationLimited>,
-    val topStationsForDepartures: List<StationLimited>
+    val topStationsForArrivals: List<TopStation>,
+    val topStationsForDepartures: List<TopStation>
 )

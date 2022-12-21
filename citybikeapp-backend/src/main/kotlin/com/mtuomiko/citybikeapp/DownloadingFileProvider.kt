@@ -16,16 +16,34 @@ private const val DOWNLOAD_DIR = "temp"
 @Singleton
 class DownloadingFileProvider : FileProvider {
     private val directoryPath = Path.of(DOWNLOAD_DIR)
+    private val filePathList = mutableListOf<Path>()
 
     init {
         directoryPath.createDirectories()
     }
 
     override fun getLocalInputStream(url: String): InputStream {
-        val path = directoryPath.resolve(getFilename(url))
-        if (!Files.exists(path)) downloadToPath(url, path)
+        logger.info { "Handling URL $url" }
 
+        val path = directoryPath.resolve(getFilename(url))
+        if (!Files.exists(path)) {
+            downloadToPath(url, path)
+        } else {
+            logger.info { "File $path already exists on filesystem" }
+        }
+
+        filePathList.add(path)
+        logger.info { "Providing $path" }
         return path.inputStream()
+    }
+
+    override fun deleteFiles() {
+        filePathList.forEach {
+            logger.debug { "Deleting $it" }
+            Files.deleteIfExists(it)
+        }
+        filePathList.clear()
+        logger.info { "All temp files deleted" }
     }
 
     private fun downloadToPath(url: String, path: Path) {

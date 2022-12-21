@@ -16,6 +16,9 @@ class StationBuilder {
     var longitude: Double = 24.9897538768656
     var latitude: Double = 60.2807560752423
 
+    fun id(id: Int) = apply { this.id = id }
+    fun nameFinnish(name: String) = apply { this.nameFinnish = name }
+
     fun build() = StationEntity(
         id,
         nameFinnish,

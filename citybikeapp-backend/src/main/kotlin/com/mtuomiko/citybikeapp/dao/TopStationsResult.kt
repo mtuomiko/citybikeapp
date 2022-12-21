@@ -4,7 +4,7 @@ package com.mtuomiko.citybikeapp.dao
  * List is in relation to a specific station. The names are always for the *other* station, not for the station which is
  * being queried (unless they happen to be the same station).
  */
-class TopStations(
+class TopStationsResult(
     val departureStationId: Int,
     val arrivalStationId: Int,
     val journeyCount: Long,

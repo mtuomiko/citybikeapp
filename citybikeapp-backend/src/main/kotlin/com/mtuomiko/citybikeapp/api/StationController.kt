@@ -2,7 +2,7 @@ package com.mtuomiko.citybikeapp.api
 
 import com.mtuomiko.citybikeapp.dao.JourneyRepository
 import com.mtuomiko.citybikeapp.dao.StationRepository
-import com.mtuomiko.citybikeapp.model.StationLimited
+import com.mtuomiko.citybikeapp.model.TopStation
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
@@ -31,22 +31,30 @@ class StationController(
         val stats = journeyRepository.getTripStatisticsByStationId(id)
         val topStations = journeyRepository.getTopStationsByStationId(id)
 
-        val topStationsForArrivals = topStations.filter { it.arrivalStationId == id }.map {
-            StationLimited(
-                id = it.departureStationId,
-                it.nameFinnish,
-                it.nameSwedish,
-                it.nameEnglish
-            )
-        }
-        val topStationsForDepartures = topStations.filter { it.departureStationId == id }.map {
-            StationLimited(
-                id = it.arrivalStationId,
-                it.nameFinnish,
-                it.nameSwedish,
-                it.nameEnglish
-            )
-        }
+        val topStationsForArrivals = topStations
+            .filter { it.arrivalStationId == id }
+            .sortedByDescending { it.journeyCount }
+            .map {
+                TopStation(
+                    id = it.departureStationId,
+                    it.nameFinnish,
+                    it.nameSwedish,
+                    it.nameEnglish,
+                    it.journeyCount
+                )
+            }
+        val topStationsForDepartures = topStations
+            .filter { it.departureStationId == id }
+            .sortedByDescending { it.journeyCount }
+            .map {
+                TopStation(
+                    id = it.arrivalStationId,
+                    it.nameFinnish,
+                    it.nameSwedish,
+                    it.nameEnglish,
+                    it.journeyCount
+                )
+            }
         val stationStatistics = StationStatistics(
             departureCount = stats.departureCount,
             arrivalCount = stats.arrivalCount,

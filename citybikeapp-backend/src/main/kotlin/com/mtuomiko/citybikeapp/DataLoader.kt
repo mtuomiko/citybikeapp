@@ -5,6 +5,7 @@ import com.mtuomiko.citybikeapp.dao.JourneyRepository
 import com.mtuomiko.citybikeapp.dao.StationRepository
 import com.mtuomiko.citybikeapp.model.JourneyNew
 import com.mtuomiko.citybikeapp.model.StationNew
+import io.micronaut.context.env.Environment
 import jakarta.inject.Inject
 import mu.KotlinLogging
 import picocli.CommandLine.Command
@@ -36,24 +37,30 @@ class DataLoader : Runnable {
     @Inject
     private lateinit var fileProvider: FileProvider
 
+    @Inject
+    private lateinit var environment: Environment
+
     private val reader = csvReader()
     private val timezone = ZoneId.of(TIMEZONE_ID)
     private lateinit var validStationIds: List<Int>
 
     override fun run() {
         logger.info { "Starting data load" }
-
-        val millis = measureTimeMillis {
-            processStations(config.stationUrl)
-            validStationIds = stationRepository.findAll().map { it.id }
-            processJourneys(config.journeyUrls)
+        try {
+            val millis = measureTimeMillis {
+                processStations(config.stationUrl)
+                validStationIds = stationRepository.findAll().map { it.id }
+                processJourneys(config.journeyUrls)
+            }
+            val duration = Duration.ofMillis(millis)
+            logger.info { "Data load complete in ${duration.toMinutes()}m and ${duration.toSecondsPart()}s" }
+        } finally {
+            if (Environments.PROD.id in environment.activeNames) fileProvider.deleteFiles()
         }
-        val duration = Duration.ofMillis(millis)
-        logger.info { "Data load complete in ${duration.toMinutes()}m and ${duration.toSecondsPart()}s" }
     }
 
     private fun processStations(url: String) {
-        logger.info { "Processing station URL $url" }
+        logger.info { "Processing stations" }
 
         val inputStream = fileProvider.getLocalInputStream(url)
 
@@ -67,9 +74,8 @@ class DataLoader : Runnable {
     }
 
     private fun processJourneys(urls: List<String>) {
+        logger.info { "Processing journeys" }
         urls.forEach { url ->
-            logger.info { "Processing journey URL $url" }
-
             val inputStream = fileProvider.getLocalInputStream(url)
 
             reader.open(inputStream) {

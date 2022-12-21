@@ -1,12 +1,3 @@
-datasources:
-  default:
-    url: ${DATABASE_CONNECTION_URL}
-    username: ${DATABASE_CONNECTION_USERNAME}
-    password: ${DATABASE_CONNECTION_PASSWORD}
-citybikeapp:
-  dataLoader:
-    stationUrl: ${CITYBIKEAPP_DATALOADER_STATIONURL}
-    journeyUrls: ${CITYBIKEAPP_DATALOADER_JOURNEYURLS}
 logger:
   levels:
     com:

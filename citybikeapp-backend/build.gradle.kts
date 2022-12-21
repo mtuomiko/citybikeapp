@@ -36,25 +36,30 @@ dependencies {
     implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
     implementation("io.micronaut.serde:micronaut-serde-jackson")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
+    implementation("io.micronaut.sql:micronaut-jdbi")
+    implementation("org.jdbi:jdbi3-sqlobject") // JDBI declarative API
+    implementation("org.jdbi:jdbi3-kotlin:3.30.0")
+    implementation("org.jdbi:jdbi3-postgres:3.30.0")
     implementation("io.swagger.core.v3:swagger-annotations")
     implementation("jakarta.annotation:jakarta.annotation-api")
-    compileOnly("jakarta.persistence:jakarta.persistence-api:3.0.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-    runtimeOnly("ch.qos.logback:logback-classic")
-    runtimeOnly("org.postgresql:postgresql")
-    testImplementation("org.assertj:assertj-core")
-    testImplementation("org.mockito:mockito-core")
-    testImplementation("org.testcontainers:junit-jupiter")
-    testImplementation("org.testcontainers:postgresql")
-    testImplementation("org.testcontainers:testcontainers")
-
     implementation("io.micronaut:micronaut-validation")
-
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.7.0")
     implementation("io.github.microutils:kotlin-logging-jvm:2.1.23") // match logback version
 
+    compileOnly("jakarta.persistence:jakarta.persistence-api:3.0.0")
+
+    runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+    testImplementation("org.assertj:assertj-core")
+    testImplementation("org.mockito:mockito-core")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:testcontainers")
 }
 
 application {
@@ -87,9 +92,12 @@ micronaut {
 }
 
 configurations.all {
-    resolutionStrategy.dependencySubstitution {
-        substitute(module("io.micronaut:micronaut-jackson-databind"))
-            .using(module("io.micronaut.serde:micronaut-serde-jackson:1.3.3"))
+    resolutionStrategy {
+        dependencySubstitution {
+            substitute(module("io.micronaut:micronaut-jackson-databind"))
+                .using(module("io.micronaut.serde:micronaut-serde-jackson:1.3.3"))
+        }
+        force("com.github.ben-manes.caffeine:caffeine:3.0.3")
     }
 }
 
