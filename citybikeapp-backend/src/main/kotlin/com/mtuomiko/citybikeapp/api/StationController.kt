@@ -1,19 +1,23 @@
 package com.mtuomiko.citybikeapp.api
 
+import com.mtuomiko.citybikeapp.TIMEZONE
 import com.mtuomiko.citybikeapp.dao.JourneyRepository
 import com.mtuomiko.citybikeapp.dao.StationRepository
-import com.mtuomiko.citybikeapp.model.TopStation
+import io.micronaut.core.annotation.Nullable
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
 import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.PathVariable
+import io.micronaut.http.annotation.QueryValue
 import io.micronaut.http.hateoas.JsonError
 import io.micronaut.http.hateoas.Link
 import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.scheduling.annotation.ExecuteOn
 import jakarta.inject.Inject
+import java.time.LocalDateTime
 
 @ExecuteOn(TaskExecutors.IO)
 @Controller("/station")
@@ -25,18 +29,32 @@ class StationController(
 ) {
 
     @Get("/{id}")
-    fun getStationWithStatistics(id: Int): StationWithStatistics {
+    fun getStationWithStatistics(
+        @PathVariable id: Int,
+        @QueryValue @Nullable
+        from: LocalDateTime?,
+        @QueryValue @Nullable
+        to: LocalDateTime?
+    ): StationWithStatistics {
+        if (from != null && to != null && from > to) {
+            throw BadRequestException("query parameter `from` timestamp cannot be after `to` timestamp")
+        }
         val station = stationRepository.findById(id).orElseThrow { NotFoundException("Station not found") }
+
+        // Interpret query timestamps to be in local Helsinki time
+        val fromInstant = from?.atZone(TIMEZONE)?.toInstant()
+        val toInstant = to?.atZone(TIMEZONE)?.toInstant()
+
         // TODO: Async handling of queries?
-        val stats = journeyRepository.getTripStatisticsByStationId(id)
-        val topStations = journeyRepository.getTopStationsByStationId(id)
+        val stats = journeyRepository.getTripStatisticsByStationId(id, fromInstant, toInstant)
+        val topStations = journeyRepository.getTopStationsByStationId(id, fromInstant, toInstant)
 
         val topStationsForArrivals = topStations
             .filter { it.arrivalStationId == id }
             .sortedByDescending { it.journeyCount }
             .map {
                 TopStation(
-                    id = it.departureStationId,
+                    it.departureStationId,
                     it.nameFinnish,
                     it.nameSwedish,
                     it.nameEnglish,
@@ -48,7 +66,7 @@ class StationController(
             .sortedByDescending { it.journeyCount }
             .map {
                 TopStation(
-                    id = it.arrivalStationId,
+                    it.arrivalStationId,
                     it.nameFinnish,
                     it.nameSwedish,
                     it.nameEnglish,
@@ -60,8 +78,8 @@ class StationController(
             arrivalCount = stats.arrivalCount,
             departureJourneyAverageDistance = stats.departureAverageDistance,
             arrivalJourneyAverageDistance = stats.arrivalAverageDistance,
-            topStationsForArrivals = topStationsForArrivals,
-            topStationsForDepartures = topStationsForDepartures
+            topStationsWhereJourneysArriveFrom = topStationsForArrivals,
+            topStationsWhereJourneysDepartTo = topStationsForDepartures
         )
 
         return StationWithStatistics(
@@ -88,5 +106,13 @@ class StationController(
         return HttpResponse.status<JsonError>(HttpStatus.NOT_FOUND).body(error)
     }
 
+    @Error
+    fun badRequest(request: HttpRequest<*>, e: BadRequestException): HttpResponse<JsonError> {
+        val error = JsonError(e.message).link(Link.SELF, Link.of(request.uri))
+
+        return HttpResponse.status<JsonError>(HttpStatus.BAD_REQUEST).body(error)
+    }
+
     class NotFoundException(message: String = "Not found", cause: Throwable? = null) : Throwable(message, cause)
+    class BadRequestException(message: String = "Bad request", cause: Throwable? = null) : Throwable(message, cause)
 }

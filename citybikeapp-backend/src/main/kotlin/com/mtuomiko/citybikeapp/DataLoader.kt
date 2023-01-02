@@ -11,13 +11,11 @@ import mu.KotlinLogging
 import picocli.CommandLine.Command
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.format.DateTimeParseException
 import kotlin.system.measureTimeMillis
 
 private val logger = KotlinLogging.logger {}
 
-private const val TIMEZONE_ID = "Europe/Helsinki" // assuming data timestamps to be local Helsinki time
 private val CHARS_TO_TRIM = arrayOf(' ', ',', '"')
 
 /**
@@ -41,7 +39,6 @@ class DataLoader : Runnable {
     private lateinit var environment: Environment
 
     private val reader = csvReader()
-    private val timezone = ZoneId.of(TIMEZONE_ID)
     private lateinit var validStationIds: List<Int>
 
     override fun run() {
@@ -115,8 +112,8 @@ class DataLoader : Runnable {
 
     private fun parseJourney(entry: Map<String, String>) = parseIgnoringMalformedData {
         JourneyNew(
-            departureAt = LocalDateTime.parse(entry["Departure"]!!).atZone(timezone).toInstant(),
-            arrivalAt = LocalDateTime.parse(entry["Return"]!!).atZone(timezone).toInstant(),
+            departureAt = LocalDateTime.parse(entry["Departure"]!!).atZone(TIMEZONE).toInstant(),
+            arrivalAt = LocalDateTime.parse(entry["Return"]!!).atZone(TIMEZONE).toInstant(),
             departureStation = entry["Departure station id"]!!.toInt(),
             arrivalStation = entry["Return station id"]!!.toInt(),
             distance = entry["Covered distance (m)"]!!.toDouble().toInt(),

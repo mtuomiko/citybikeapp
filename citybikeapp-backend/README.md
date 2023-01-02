@@ -46,3 +46,5 @@ overriding using environment variables (like Spring does) but these are explicit
 * Use single testcontainer for all the tests. Even though running the full application is fast (compared to Spring), the
   database container is adding some overhead.
 * Mapping is getting verbose, use MapStruct?
+* Enable strict checking for nullable query params when the option becomes available,
+  see [micronaut issue 5135](https://github.com/micronaut-projects/micronaut-core/issues/5135)

@@ -37,9 +37,9 @@ dependencies {
     implementation("io.micronaut.serde:micronaut-serde-jackson")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
     implementation("io.micronaut.sql:micronaut-jdbi")
-    implementation("org.jdbi:jdbi3-sqlobject") // JDBI declarative API
-    implementation("org.jdbi:jdbi3-kotlin:3.30.0")
-    implementation("org.jdbi:jdbi3-postgres:3.30.0")
+    implementation("org.jdbi:jdbi3-stringtemplate4")
+    implementation("org.jdbi:jdbi3-kotlin")
+    implementation("org.jdbi:jdbi3-postgres")
     implementation("io.swagger.core.v3:swagger-annotations")
     implementation("jakarta.annotation:jakarta.annotation-api")
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")

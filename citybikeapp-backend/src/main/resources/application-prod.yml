@@ -5,3 +5,6 @@ logger:
         citybikeapp: INFO
     io:
       micronaut: INFO
+    org:
+      jdbi: INFO
+
