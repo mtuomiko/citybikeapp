@@ -29,4 +29,4 @@ jobs:
           build-root-directory: citybikeapp-backend
       # will run test & check tasks also
       - name: Gradle build
-        run: ./gradlew clean build jacocoTestCoverageVerification # feeble attempt to keep coverage ratio up
+        run: ./gradlew clean build jacocoTestCoverageVerification # feeble attempt to keep test coverage up
