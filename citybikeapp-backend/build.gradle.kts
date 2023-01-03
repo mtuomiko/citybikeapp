@@ -11,6 +11,7 @@ plugins {
 
     id("io.gitlab.arturbosch.detekt").version("1.22.0")
     id("com.diffplug.spotless").version("6.12.0")
+    id("jacoco")
 }
 
 version = "0.1"
@@ -135,4 +136,14 @@ configure<SpotlessExtension> {
 
 tasks.named<MicronautDockerfile>("dockerfile") {
     baseImage.set("eclipse-temurin:17.0.5_8-jre-alpine")
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.57".toBigDecimal()
+            }
+        }
+    }
 }
