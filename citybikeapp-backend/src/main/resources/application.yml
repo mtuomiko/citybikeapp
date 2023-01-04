@@ -6,6 +6,9 @@ micronaut:
   serde:
     serialization:
       inclusion: NON_ABSENT
+  openapi:
+    target:
+      file: gen/api.yml
 endpoints:
   all:
     enabled: false

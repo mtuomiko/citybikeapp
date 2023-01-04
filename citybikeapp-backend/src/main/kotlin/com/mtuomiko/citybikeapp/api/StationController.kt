@@ -16,11 +16,14 @@ import io.micronaut.http.hateoas.JsonError
 import io.micronaut.http.hateoas.Link
 import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.scheduling.annotation.ExecuteOn
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.inject.Inject
 import java.time.LocalDateTime
 
 @ExecuteOn(TaskExecutors.IO)
 @Controller("/station")
+@Tag(name = "station")
 class StationController(
     @Inject
     private val journeyRepository: JourneyRepository,
@@ -28,7 +31,17 @@ class StationController(
     private val stationRepository: StationRepository
 ) {
 
+    /**
+     * @param id Station ID
+     * @param from Earliest journey time to include in station statistics
+     * @param to Latest journey time to include in station statistics
+     */
     @Get("/{id}")
+    @Operation(
+        summary = "Get single station information with statistics",
+        description = "Single station information including journey statistics. Statistics are filtered using the " +
+            "optional query parameters."
+    )
     fun getStationWithStatistics(
         @PathVariable id: Int,
         @QueryValue @Nullable
