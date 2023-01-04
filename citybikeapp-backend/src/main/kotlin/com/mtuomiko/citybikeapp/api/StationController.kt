@@ -17,9 +17,11 @@ import io.micronaut.http.hateoas.Link
 import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.scheduling.annotation.ExecuteOn
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.inject.Inject
-import java.time.LocalDateTime
+import java.time.LocalDate
+import java.time.LocalTime
 
 @ExecuteOn(TaskExecutors.IO)
 @Controller("/station")
@@ -33,34 +35,34 @@ class StationController(
 
     /**
      * @param id Station ID
-     * @param from Earliest journey time to include in station statistics
-     * @param to Latest journey time to include in station statistics
+     * @param fromDate Earliest journey date to include in station statistics
+     * @param toDate Latest journey date to include in station statistics
      */
     @Get("/{id}")
     @Operation(
         summary = "Get single station information with statistics",
         description = "Single station information including journey statistics. Statistics are filtered using the " +
-            "optional query parameters."
+            "optional query parameters. Note that malformed optional query parameters do not result in failure."
     )
     fun getStationWithStatistics(
         @PathVariable id: Int,
-        @QueryValue @Nullable
-        from: LocalDateTime?,
-        @QueryValue @Nullable
-        to: LocalDateTime?
+        @Parameter(example = "2021-06-15") @QueryValue @Nullable
+        fromDate: LocalDate?,
+        @Parameter(example = "2021-07-02") @QueryValue @Nullable
+        toDate: LocalDate?
     ): StationWithStatistics {
-        if (from != null && to != null && from > to) {
+        if (fromDate != null && toDate != null && fromDate > toDate) {
             throw BadRequestException("query parameter `from` timestamp cannot be after `to` timestamp")
         }
         val station = stationRepository.findById(id).orElseThrow { NotFoundException("Station not found") }
 
-        // Interpret query timestamps to be in local Helsinki time
-        val fromInstant = from?.atZone(TIMEZONE)?.toInstant()
-        val toInstant = to?.atZone(TIMEZONE)?.toInstant()
+        // Interpret query dates to be in local Helsinki time
+        val from = fromDate?.atStartOfDay(TIMEZONE)?.toInstant()
+        val to = toDate?.atTime(LocalTime.MAX)?.atZone(TIMEZONE)?.toInstant()
 
         // TODO: Async handling of queries?
-        val stats = journeyRepository.getTripStatisticsByStationId(id, fromInstant, toInstant)
-        val topStations = journeyRepository.getTopStationsByStationId(id, fromInstant, toInstant)
+        val stats = journeyRepository.getTripStatisticsByStationId(id, from, to)
+        val topStations = journeyRepository.getTopStationsByStationId(id, from, to)
 
         val topStationsForArrivals = topStations
             .filter { it.arrivalStationId == id }

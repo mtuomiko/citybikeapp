@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { StationStatistics, StationWithStatistics, TopStation } from "generated";
 import { stationApi } from "clients";
 
@@ -16,7 +16,7 @@ const StationDetails = () => {
     };
 
     void getStation();
-  }, []);
+  }, [stationId]);
 
   if (station === undefined) return null;
 
@@ -39,10 +39,10 @@ const StationDetails = () => {
       <h3>{name}</h3>
       {stations.map(station =>
         <div key={station.id}>
-          <span>{station.nameFinnish}, {station.journeyCount} journeys</span>
+          <span><Link to={`/station/${station.id}`}>{station.nameFinnish}</Link>, {station.journeyCount} journeys</span>
         </div>
       )}
-    </div>
+    </div >
   );
 
   return (

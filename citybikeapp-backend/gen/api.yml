@@ -39,7 +39,8 @@ paths:
       - station
       summary: Get single station information with statistics
       description: Single station information including journey statistics. Statistics
-        are filtered using the optional query parameters.
+        are filtered using the optional query parameters. Note that malformed optional
+        query parameters do not result in failure.
       operationId: getStationWithStatistics
       parameters:
       - name: id
@@ -49,20 +50,22 @@ paths:
         schema:
           type: integer
           format: int32
-      - name: from
+      - name: fromDate
         in: query
-        description: Earliest journey time to include in station statistics
+        description: Earliest journey date to include in station statistics
         schema:
           type: string
-          format: date-time
+          format: date
           nullable: true
-      - name: to
+        example: 2021-06-15
+      - name: toDate
         in: query
-        description: Latest journey time to include in station statistics
+        description: Latest journey date to include in station statistics
         schema:
           type: string
-          format: date-time
+          format: date
           nullable: true
+        example: 2021-07-02
       responses:
         "200":
           description: getStationWithStatistics 200 response
