@@ -1,16 +1,19 @@
 package com.mtuomiko.citybikeapp
 
 import io.micronaut.configuration.picocli.PicocliRunner
+import io.micronaut.management.endpoint.health.HealthEndpoint
+import io.micronaut.openapi.annotation.OpenAPIInclude
 import io.micronaut.runtime.Micronaut.run
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.info.Info
 
 @OpenAPIDefinition(
     info = Info(
-        title = "citybikeapp",
-        version = "0.0"
+        title = "City Bike App API",
+        version = "0.0.3"
     )
 )
+@OpenAPIInclude(classes = [HealthEndpoint::class])
 object Application {
     /**
      * Main entrypoint. Decides between running the data loader or the actual server application.

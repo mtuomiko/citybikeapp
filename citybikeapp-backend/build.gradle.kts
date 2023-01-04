@@ -28,6 +28,7 @@ dependencies {
     kapt("io.micronaut.openapi:micronaut-openapi")
     kapt("io.micronaut.serde:micronaut-serde-processor")
     kapt("info.picocli:picocli-codegen")
+
     implementation("info.picocli:picocli")
     implementation("io.micronaut.picocli:micronaut-picocli")
     implementation("io.micronaut:micronaut-http-client")
@@ -48,6 +49,7 @@ dependencies {
     implementation("io.micronaut:micronaut-validation")
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.7.0")
     implementation("io.github.microutils:kotlin-logging-jvm:2.1.23") // match logback version
+    implementation("io.micronaut.openapi:micronaut-openapi") // include annotations
 
     compileOnly("jakarta.persistence:jakarta.persistence-api:3.0.0")
 
