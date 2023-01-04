@@ -2,7 +2,9 @@
 /node_modules/
 
 # Keep build directory
-!/build/
 !/build/.gitkeep
 
 .env
+
+/src/generated/*
+!/src/generated/.gitkeep

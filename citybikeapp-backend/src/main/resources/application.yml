@@ -1,6 +1,8 @@
 micronaut:
   server:
     port: ${PORT:8080}
+    cors:
+      enabled: true # no credentials so just allow everything for now
   application:
     name: citybikeapp
   serde:

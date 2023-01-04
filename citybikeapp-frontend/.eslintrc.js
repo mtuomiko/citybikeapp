@@ -48,7 +48,7 @@ module.exports = {
       "error",
       "always"
     ],
-    "comma-dangle": [
+    "@typescript-eslint/comma-dangle": [
       "error",
       "only-multiline"
     ],
@@ -78,5 +78,8 @@ module.exports = {
         ]
       }
     ]
-  }
-}
+  },
+  ignorePatterns: [
+    "src/generated/**/*"
+  ]
+};
