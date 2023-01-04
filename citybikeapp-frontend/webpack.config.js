@@ -8,7 +8,7 @@ const config = (env, argv) => {
 
   const apiBaseUrl = argv.mode === "production"
     ? process.env.API_BASE_URL ?? "/api" // production default
-    : process.env.API_BASE_URL ?? "http://localhost:8080/api"; // dev default
+    : process.env.API_BASE_URL ?? "http://localhost:8080"; // dev default
 
   return {
     entry: "./src/index.tsx",
