@@ -4,12 +4,11 @@ import io.micronaut.configuration.picocli.PicocliRunner
 import io.micronaut.context.ApplicationContext
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 @MicronautTest(environments = ["test", "prod"])
 class DataLoaderProductionEnvironmentTest {
@@ -24,13 +23,13 @@ class DataLoaderProductionEnvironmentTest {
     fun `When running in production environment, data loader will call for file deletion`() {
         PicocliRunner.run(DataLoader::class.java, applicationContext)
 
-        verify(fileProvider).deleteFiles()
+        verify(exactly = 1) { fileProvider.deleteFiles() }
     }
 
     @MockBean(DownloadingFileProvider::class)
     private fun fileProvider(): FileProvider {
-        val mock: FileProvider = mock()
-        whenever(mock.getLocalInputStream(any())).thenReturn("".byteInputStream())
-        return mock
+        val mockProvider = mockk<FileProvider>(relaxUnitFun = true)
+        every { mockProvider.getLocalInputStream(any()) } returns "".byteInputStream()
+        return mockProvider
     }
 }

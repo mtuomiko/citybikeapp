@@ -1,7 +1,7 @@
 package com.mtuomiko.citybikeapp
 
-import com.mtuomiko.citybikeapp.dao.JourneyRepository
-import com.mtuomiko.citybikeapp.dao.StationRepository
+import com.mtuomiko.citybikeapp.dao.repository.JourneyRepository
+import com.mtuomiko.citybikeapp.dao.repository.StationRepository
 import io.micronaut.configuration.picocli.PicocliRunner
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.annotation.Property

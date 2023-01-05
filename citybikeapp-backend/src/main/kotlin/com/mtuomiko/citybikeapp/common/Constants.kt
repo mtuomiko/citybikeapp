@@ -1,4 +1,4 @@
-package com.mtuomiko.citybikeapp
+package com.mtuomiko.citybikeapp.common
 
 import java.time.ZoneId
 
