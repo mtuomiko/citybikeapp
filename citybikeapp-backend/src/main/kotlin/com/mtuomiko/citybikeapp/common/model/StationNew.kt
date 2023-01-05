@@ -1,10 +1,7 @@
-package com.mtuomiko.citybikeapp.model
+package com.mtuomiko.citybikeapp.common.model
 
-import io.micronaut.serde.annotation.Serdeable
-
-@Serdeable
-data class Station(
-    val id: Int,
+data class StationNew(
+    val id: Int?,
     val nameFinnish: String,
     val nameSwedish: String,
     val nameEnglish: String,

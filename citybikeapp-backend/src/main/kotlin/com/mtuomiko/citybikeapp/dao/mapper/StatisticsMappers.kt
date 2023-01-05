@@ -1,7 +1,7 @@
 package com.mtuomiko.citybikeapp.dao.mapper
 
-import com.mtuomiko.citybikeapp.dao.JourneyStatistics
-import com.mtuomiko.citybikeapp.dao.TopStationsResult
+import com.mtuomiko.citybikeapp.dao.model.JourneyStatistics
+import com.mtuomiko.citybikeapp.dao.model.TopStationsQueryResult
 import org.jdbi.v3.core.mapper.RowMapper
 import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
@@ -17,8 +17,8 @@ class JourneyStatisticsMapper : RowMapper<JourneyStatistics> {
 }
 
 @Suppress("MagicNumber")
-class TopStationsMapper : RowMapper<TopStationsResult> {
-    override fun map(resultSet: ResultSet, ctx: StatementContext) = TopStationsResult(
+class TopStationsMapper : RowMapper<TopStationsQueryResult> {
+    override fun map(resultSet: ResultSet, ctx: StatementContext) = TopStationsQueryResult(
         departureStationId = resultSet.getInt(1),
         arrivalStationId = resultSet.getInt(2),
         journeyCount = resultSet.getLong(3),

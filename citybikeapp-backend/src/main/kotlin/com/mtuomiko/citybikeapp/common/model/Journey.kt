@@ -1,4 +1,4 @@
-package com.mtuomiko.citybikeapp.model
+package com.mtuomiko.citybikeapp.common.model
 
 import io.micronaut.serde.annotation.Serdeable
 import java.time.Instant
@@ -12,5 +12,4 @@ data class Journey(
     val returnStation: Station,
     val distance: Int,
     val duration: Int
-
 )

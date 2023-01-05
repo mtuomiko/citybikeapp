@@ -1,6 +1,6 @@
-package com.mtuomiko.citybikeapp.dao
+package com.mtuomiko.citybikeapp.dao.model
 
-import com.mtuomiko.citybikeapp.model.StationNew
+import com.mtuomiko.citybikeapp.common.model.StationNew
 import java.time.Instant
 
 data class StationInsert(

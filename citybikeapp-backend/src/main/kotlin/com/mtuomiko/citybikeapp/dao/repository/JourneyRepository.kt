@@ -1,9 +1,11 @@
-package com.mtuomiko.citybikeapp.dao
+package com.mtuomiko.citybikeapp.dao.repository
 
+import com.mtuomiko.citybikeapp.common.model.JourneyNew
 import com.mtuomiko.citybikeapp.dao.entity.JourneyEntity
 import com.mtuomiko.citybikeapp.dao.mapper.JourneyStatisticsMapper
 import com.mtuomiko.citybikeapp.dao.mapper.TopStationsMapper
-import com.mtuomiko.citybikeapp.model.JourneyNew
+import com.mtuomiko.citybikeapp.dao.model.JourneyStatistics
+import com.mtuomiko.citybikeapp.dao.model.TopStationsQueryResult
 import io.micronaut.data.annotation.Join
 import io.micronaut.data.annotation.repeatable.JoinSpecifications
 import io.micronaut.data.jdbc.annotation.JdbcRepository
@@ -57,7 +59,7 @@ abstract class JourneyRepository(
     }
 
     @Transactional
-    fun getTripStatisticsByStationId(stationId: Int, from: Instant? = null, to: Instant? = null): JourneyStatistics {
+    fun getJourneyStatisticsByStationId(stationId: Int, from: Instant? = null, to: Instant? = null): JourneyStatistics {
         val sql = """
             SELECT 
                 COUNT(*) FILTER (WHERE departure_station_id = :stationId) as departure_count,
@@ -90,7 +92,7 @@ abstract class JourneyRepository(
         from: Instant? = null,
         to: Instant? = null,
         limitPerDirection: Int = 5
-    ): List<TopStationsResult> {
+    ): List<TopStationsQueryResult> {
         val sql = """
             SELECT departure_station_id, arrival_station_id, journeys, name_finnish, name_swedish, name_english
             FROM (

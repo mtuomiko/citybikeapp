@@ -29,8 +29,8 @@ const StationDetails = () => {
         <li>departureJourneyAverageDistance {statistics.departureJourneyAverageDistance}</li>
         <li>arrivalJourneyAverageDistance {statistics.arrivalJourneyAverageDistance}</li>
       </ul>
-      {topStations("Most popular stations where people arrive from", statistics.topStationsWhereJourneysArriveFrom)}
-      {topStations("Most popular stations where people go to", statistics.topStationsWhereJourneysDepartTo)}
+      {topStations("Most popular stations where people arrive from", statistics.topStationsForArrivingHere)}
+      {topStations("Most popular stations where people go to", statistics.topStationsForDepartingTo)}
     </>
   );
 
