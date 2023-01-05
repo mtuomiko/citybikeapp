@@ -1,4 +1,4 @@
-package com.mtuomiko.citybikeapp.dao
+package com.mtuomiko.citybikeapp.dao.model
 
 class JourneyStatistics(
     val departureCount: Long,

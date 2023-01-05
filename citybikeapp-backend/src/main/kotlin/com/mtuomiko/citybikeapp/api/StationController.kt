@@ -1,8 +1,9 @@
 package com.mtuomiko.citybikeapp.api
 
-import com.mtuomiko.citybikeapp.TIMEZONE
-import com.mtuomiko.citybikeapp.dao.JourneyRepository
-import com.mtuomiko.citybikeapp.dao.StationRepository
+import com.mtuomiko.citybikeapp.api.model.StationWithStatistics
+import com.mtuomiko.citybikeapp.common.model.TopStation
+import com.mtuomiko.citybikeapp.svc.StationService
+import com.mtuomiko.citybikeapp.svc.model.StationStatistics
 import io.micronaut.core.annotation.Nullable
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -21,16 +22,14 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.inject.Inject
 import java.time.LocalDate
-import java.time.LocalTime
+import com.mtuomiko.citybikeapp.api.model.StationStatistics as APIStationStatistics
+import com.mtuomiko.citybikeapp.api.model.TopStation as APITopStation
 
 @ExecuteOn(TaskExecutors.IO)
 @Controller("/station")
 @Tag(name = "station")
 class StationController(
-    @Inject
-    private val journeyRepository: JourneyRepository,
-    @Inject
-    private val stationRepository: StationRepository
+    @Inject private val stationService: StationService
 ) {
 
     /**
@@ -54,48 +53,9 @@ class StationController(
         if (fromDate != null && toDate != null && fromDate > toDate) {
             throw BadRequestException("query parameter `from` timestamp cannot be after `to` timestamp")
         }
-        val station = stationRepository.findById(id).orElseThrow { NotFoundException("Station not found") }
+        val station = stationService.getStationById(id) ?: throw NotFoundException("Station not found")
 
-        // Interpret query dates to be in local Helsinki time
-        val from = fromDate?.atStartOfDay(TIMEZONE)?.toInstant()
-        val to = toDate?.atTime(LocalTime.MAX)?.atZone(TIMEZONE)?.toInstant()
-
-        // TODO: Async handling of queries?
-        val stats = journeyRepository.getTripStatisticsByStationId(id, from, to)
-        val topStations = journeyRepository.getTopStationsByStationId(id, from, to)
-
-        val topStationsForArrivals = topStations
-            .filter { it.arrivalStationId == id }
-            .sortedByDescending { it.journeyCount }
-            .map {
-                TopStation(
-                    it.departureStationId,
-                    it.nameFinnish,
-                    it.nameSwedish,
-                    it.nameEnglish,
-                    it.journeyCount
-                )
-            }
-        val topStationsForDepartures = topStations
-            .filter { it.departureStationId == id }
-            .sortedByDescending { it.journeyCount }
-            .map {
-                TopStation(
-                    it.arrivalStationId,
-                    it.nameFinnish,
-                    it.nameSwedish,
-                    it.nameEnglish,
-                    it.journeyCount
-                )
-            }
-        val stationStatistics = StationStatistics(
-            departureCount = stats.departureCount,
-            arrivalCount = stats.arrivalCount,
-            departureJourneyAverageDistance = stats.departureAverageDistance,
-            arrivalJourneyAverageDistance = stats.arrivalAverageDistance,
-            topStationsWhereJourneysArriveFrom = topStationsForArrivals,
-            topStationsWhereJourneysDepartTo = topStationsForDepartures
-        )
+        val stationStatistics = stationService.getStationStatistics(id, fromDate, toDate)
 
         return StationWithStatistics(
             id = station.id,
@@ -110,7 +70,7 @@ class StationController(
             capacity = station.capacity,
             longitude = station.longitude,
             latitude = station.latitude,
-            statistics = stationStatistics
+            statistics = stationStatistics.toApiModel()
         )
     }
 
@@ -130,4 +90,15 @@ class StationController(
 
     class NotFoundException(message: String = "Not found", cause: Throwable? = null) : Throwable(message, cause)
     class BadRequestException(message: String = "Bad request", cause: Throwable? = null) : Throwable(message, cause)
+
+    private fun StationStatistics.toApiModel() = APIStationStatistics(
+        departureCount,
+        arrivalCount,
+        departureAverageDistance,
+        arrivalAverageDistance,
+        topStationsForArrivingHere.map { it.toApiModel() },
+        topStationsForDepartingTo.map { it.toApiModel() }
+    )
+
+    private fun TopStation.toApiModel() = APITopStation(id, nameFinnish, nameSwedish, nameEnglish, journeyCount)
 }

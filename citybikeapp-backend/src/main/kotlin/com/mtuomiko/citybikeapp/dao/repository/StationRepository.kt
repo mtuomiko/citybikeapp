@@ -1,7 +1,8 @@
-package com.mtuomiko.citybikeapp.dao
+package com.mtuomiko.citybikeapp.dao.repository
 
+import com.mtuomiko.citybikeapp.common.model.StationNew
 import com.mtuomiko.citybikeapp.dao.entity.StationEntity
-import com.mtuomiko.citybikeapp.model.StationNew
+import com.mtuomiko.citybikeapp.dao.model.StationInsert
 import io.micronaut.data.jdbc.annotation.JdbcRepository
 import io.micronaut.data.repository.PageableRepository
 import org.jdbi.v3.core.Jdbi

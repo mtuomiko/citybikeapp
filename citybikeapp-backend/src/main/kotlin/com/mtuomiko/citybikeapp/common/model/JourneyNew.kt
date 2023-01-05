@@ -1,4 +1,4 @@
-package com.mtuomiko.citybikeapp.model
+package com.mtuomiko.citybikeapp.common.model
 
 import java.time.Instant
 

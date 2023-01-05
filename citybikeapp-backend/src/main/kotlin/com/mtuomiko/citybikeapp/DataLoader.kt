@@ -1,10 +1,11 @@
 package com.mtuomiko.citybikeapp
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import com.mtuomiko.citybikeapp.dao.JourneyRepository
-import com.mtuomiko.citybikeapp.dao.StationRepository
-import com.mtuomiko.citybikeapp.model.JourneyNew
-import com.mtuomiko.citybikeapp.model.StationNew
+import com.mtuomiko.citybikeapp.common.TIMEZONE
+import com.mtuomiko.citybikeapp.common.model.JourneyNew
+import com.mtuomiko.citybikeapp.common.model.StationNew
+import com.mtuomiko.citybikeapp.dao.repository.JourneyRepository
+import com.mtuomiko.citybikeapp.dao.repository.StationRepository
 import io.micronaut.context.env.Environment
 import jakarta.inject.Inject
 import mu.KotlinLogging

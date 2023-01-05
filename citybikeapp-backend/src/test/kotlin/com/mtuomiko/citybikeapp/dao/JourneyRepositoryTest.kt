@@ -1,5 +1,6 @@
 package com.mtuomiko.citybikeapp.dao
 
+import com.mtuomiko.citybikeapp.dao.repository.JourneyRepository
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Test
@@ -14,7 +15,7 @@ class JourneyRepositoryTest(
      */
     @Test
     fun `Trip statistics query can be run`() {
-        val result = journeyRepository.getTripStatisticsByStationId(100)
+        val result = journeyRepository.getJourneyStatisticsByStationId(100)
     }
 
     @Test
