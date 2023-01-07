@@ -66,7 +66,7 @@ class DataLoader : Runnable {
             readAllWithHeaderAsSequence()
                 .mapNotNull { parseStation(it) }
                 .chunked(config.batchSize)
-                .forEach { stationRepository.saveInBatch(it) }
+                .forEach { stationRepository.saveInBatchIgnoringConflicts(it) }
         }
         logger.info { "Stations loaded" }
     }
@@ -81,7 +81,7 @@ class DataLoader : Runnable {
                     .mapNotNull(::parseJourney)
                     .filter(::isJourneyValid)
                     .chunked(config.batchSize)
-                    .forEach { journeyRepository.saveInBatch(it) }
+                    .forEach { journeyRepository.saveInBatchIgnoringConflicts(it) }
             }
         }
         logger.info { "Journeys loaded" }

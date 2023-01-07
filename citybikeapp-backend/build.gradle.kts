@@ -28,6 +28,7 @@ dependencies {
     kapt("io.micronaut.openapi:micronaut-openapi")
     kapt("io.micronaut.serde:micronaut-serde-processor")
     kapt("info.picocli:picocli-codegen")
+    kapt("org.mapstruct:mapstruct-processor:1.5.3.Final")
 
     implementation("info.picocli:picocli")
     implementation("io.micronaut.picocli:micronaut-picocli")
@@ -50,6 +51,7 @@ dependencies {
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.7.0")
     implementation("io.github.microutils:kotlin-logging-jvm:2.1.23") // match logback version
     implementation("io.micronaut.openapi:micronaut-openapi") // include annotations
+    implementation("org.mapstruct:mapstruct:1.5.3.Final")
 
     compileOnly("jakarta.persistence:jakarta.persistence-api:3.0.0")
 
@@ -58,8 +60,6 @@ dependencies {
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     testImplementation("org.assertj:assertj-core")
-//    testImplementation("org.mockito:mockito-core")
-//    testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
     testImplementation("io.mockk:mockk")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")

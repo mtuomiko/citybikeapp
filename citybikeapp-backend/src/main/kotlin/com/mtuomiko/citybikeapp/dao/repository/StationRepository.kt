@@ -35,7 +35,7 @@ abstract class StationRepository(
     private val bindValues = stationMapping.values.toList()
 
     @Transactional
-    fun saveInBatch(stations: List<StationNew>): Int {
+    fun saveInBatchIgnoringConflicts(stations: List<StationNew>): Int {
         val now = instantSource.instant()
         val insertStations = stations.map { StationInsert.from(it, now) }
 

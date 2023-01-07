@@ -1,0 +1,11 @@
+logger:
+  levels:
+#    com:
+#      mtuomiko:
+#        citybikeapp: DEBUG
+#    io:
+#      micronaut:
+#        data: DEBUG
+#    org:
+#      jdbi: DEBUG
+#      stringtemplate: DEBUG

@@ -1,24 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { StationStatistics, StationWithStatistics, TopStation } from "generated";
+import { StationStatistics, StationDetailsWithStatisticsResponse, TopStation, StationDetails } from "generated";
 import { stationApi } from "clients";
 
 const StationDetails = () => {
   const params = useParams();
   const stationId = Number(params.stationId);
-  const [station, setStation] = useState<StationWithStatistics | undefined>(undefined);
+  const [response, setResponse] = useState<StationDetailsWithStatisticsResponse | undefined>(undefined);
   useEffect(() => {
     const getStation = async () => {
       if (Number.isNaN(stationId)) return;
 
       const response = await stationApi.getStationWithStatistics(stationId);
-      setStation(response.data);
+      setResponse(response.data);
     };
 
     void getStation();
   }, [stationId]);
 
-  if (station === undefined) return null;
+  if (response === undefined) return null;
 
   const statistics = (statistics: StationStatistics) => (
     <>
@@ -26,8 +26,8 @@ const StationDetails = () => {
       <ul>
         <li>departureCount: {statistics.departureCount}</li>
         <li>arrivalCount {statistics.arrivalCount}</li>
-        <li>departureJourneyAverageDistance {statistics.departureJourneyAverageDistance}</li>
-        <li>arrivalJourneyAverageDistance {statistics.arrivalJourneyAverageDistance}</li>
+        <li>departureJourneyAverageDistance {statistics.departureAverageDistance}</li>
+        <li>arrivalJourneyAverageDistance {statistics.arrivalAverageDistance}</li>
       </ul>
       {topStations("Most popular stations where people arrive from", statistics.topStationsForArrivingHere)}
       {topStations("Most popular stations where people go to", statistics.topStationsForDepartingTo)}
@@ -45,23 +45,27 @@ const StationDetails = () => {
     </div >
   );
 
+  const details = (details: StationDetails) => (
+    <ul>
+      <li>id: {details.id}</li>
+      <li>nameFinnish: {details.nameFinnish}</li>
+      <li>nameSwedish: {details.nameEnglish}</li>
+      <li>nameEnglish: {details.nameEnglish}</li>
+      <li>addressFinnish: {details.addressFinnish}</li>
+      <li>addressSwedish: {details.addressSwedish}</li>
+      <li>cityFinnish: {details.cityFinnish}</li>
+      <li>citySwedish: {details.citySwedish}</li>
+      <li>operator: {details.operator}</li>
+      <li>capacity: {details.capacity}</li>
+      <li>longitude: {details.longitude}</li>
+      <li>latitude: {details.latitude}</li>
+    </ul>
+  )
+
   return (
     <div>
-      <ul>
-        <li>id: {station.id}</li>
-        <li>nameFinnish: {station.nameFinnish}</li>
-        <li>nameSwedish: {station.nameEnglish}</li>
-        <li>nameEnglish: {station.nameEnglish}</li>
-        <li>addressFinnish: {station.addressFinnish}</li>
-        <li>addressSwedish: {station.addressSwedish}</li>
-        <li>cityFinnish: {station.cityFinnish}</li>
-        <li>citySwedish: {station.citySwedish}</li>
-        <li>operator: {station.operator}</li>
-        <li>capacity: {station.capacity}</li>
-        <li>longitude: {station.longitude}</li>
-        <li>latitude: {station.latitude}</li>
-      </ul>
-      {statistics(station.statistics)}
+      {details(response.station)}
+      {statistics(response.statistics)}
     </div>
   );
 };

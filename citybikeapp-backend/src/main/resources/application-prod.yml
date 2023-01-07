@@ -1,10 +1,1 @@
-logger:
-  levels:
-    com:
-      mtuomiko:
-        citybikeapp: INFO
-    io:
-      micronaut: INFO
-    org:
-      jdbi: INFO
-
+# nothing yet
