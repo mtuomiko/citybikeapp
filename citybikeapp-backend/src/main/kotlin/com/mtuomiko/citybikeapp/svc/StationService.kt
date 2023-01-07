@@ -1,6 +1,7 @@
 package com.mtuomiko.citybikeapp.svc
 
 import com.mtuomiko.citybikeapp.common.TIMEZONE
+import com.mtuomiko.citybikeapp.common.model.Station
 import com.mtuomiko.citybikeapp.dao.StationDao
 import com.mtuomiko.citybikeapp.dao.StatisticsDao
 import com.mtuomiko.citybikeapp.svc.model.StationStatistics
@@ -15,6 +16,12 @@ class StationService(
     @Inject private val statisticsDao: StatisticsDao
 ) {
     fun getStationById(stationId: Int) = stationDao.getStationById(stationId)
+
+    fun getAllStationsLimited() = stationDao.getAllStationsLimited()
+
+    fun getStations(searchTokens: List<String>, page: Int): List<Station> {
+        return stationDao.getStations(searchTokens, page)
+    }
 
     fun getStationStatistics(stationId: Int, fromDate: LocalDate?, toDate: LocalDate?): StationStatistics {
         // Interpret query dates to be in local Helsinki time

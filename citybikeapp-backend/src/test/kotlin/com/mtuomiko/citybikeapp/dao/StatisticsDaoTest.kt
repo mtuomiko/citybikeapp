@@ -1,5 +1,6 @@
 package com.mtuomiko.citybikeapp.dao
 
+import com.mtuomiko.citybikeapp.dao.builder.TopStationsQueryResultBuilder
 import com.mtuomiko.citybikeapp.dao.repository.JourneyRepository
 import io.mockk.every
 import io.mockk.mockk

@@ -40,10 +40,7 @@ module.exports = {
       "double",
       { avoidEscape: true }
     ],
-    semi: [
-      "error",
-      "always"
-    ],
+    semi: "off",
     "@typescript-eslint/semi": [
       "error",
       "always"

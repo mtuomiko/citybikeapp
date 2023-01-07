@@ -1,10 +1,11 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 
 const App = () => {
   return (
     <div>
       <p>Root App works!</p>
+      <Link to={"/stations"}>Stations list</Link>
       <Outlet />
     </div>
   );
