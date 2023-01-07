@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: City Bike App API
-  version: 0.0.4a
+  version: 0.0.5a
 paths:
   /health:
     get:
@@ -72,7 +72,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StationWithStatistics'
+                $ref: '#/components/schemas/StationDetailsWithStatisticsResponse'
 components:
   schemas:
     HealthCheckType:
@@ -111,37 +111,7 @@ components:
           nullable: true
     Object:
       type: object
-    StationStatistics:
-      required:
-      - arrivalCount
-      - arrivalJourneyAverageDistance
-      - departureCount
-      - departureJourneyAverageDistance
-      - topStationsForArrivingHere
-      - topStationsForDepartingTo
-      type: object
-      properties:
-        departureCount:
-          type: integer
-          format: int64
-        arrivalCount:
-          type: integer
-          format: int64
-        departureJourneyAverageDistance:
-          type: number
-          format: double
-        arrivalJourneyAverageDistance:
-          type: number
-          format: double
-        topStationsForArrivingHere:
-          type: array
-          items:
-            $ref: '#/components/schemas/TopStation'
-        topStationsForDepartingTo:
-          type: array
-          items:
-            $ref: '#/components/schemas/TopStation'
-    StationWithStatistics:
+    StationDetails:
       required:
       - addressFinnish
       - addressSwedish
@@ -155,7 +125,6 @@ components:
       - nameFinnish
       - nameSwedish
       - operator
-      - statistics
       type: object
       properties:
         id:
@@ -186,8 +155,46 @@ components:
         latitude:
           type: number
           format: double
+    StationDetailsWithStatisticsResponse:
+      required:
+      - station
+      - statistics
+      type: object
+      properties:
+        station:
+          $ref: '#/components/schemas/StationDetails'
         statistics:
           $ref: '#/components/schemas/StationStatistics'
+    StationStatistics:
+      required:
+      - arrivalAverageDistance
+      - arrivalCount
+      - departureAverageDistance
+      - departureCount
+      - topStationsForArrivingHere
+      - topStationsForDepartingTo
+      type: object
+      properties:
+        departureCount:
+          type: integer
+          format: int64
+        arrivalCount:
+          type: integer
+          format: int64
+        departureAverageDistance:
+          type: number
+          format: double
+        arrivalAverageDistance:
+          type: number
+          format: double
+        topStationsForArrivingHere:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopStation'
+        topStationsForDepartingTo:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopStation'
     TopStation:
       required:
       - id

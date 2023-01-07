@@ -1,4 +1,4 @@
-package com.mtuomiko.citybikeapp.common
+package com.mtuomiko.citybikeapp.dao
 
 import io.micronaut.configuration.jdbi.JdbiCustomizer
 import io.micronaut.context.annotation.Requires
@@ -8,7 +8,7 @@ import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.statement.Slf4JSqlLogger
 
 @Singleton
-@Requires(notEnv = ["prod", "test"])
+@Requires(env = ["dev"])
 @Named("default")
 class JdbiLoggingCustomizer : JdbiCustomizer {
     override fun customize(jdbi: Jdbi) {

@@ -41,7 +41,7 @@ abstract class JourneyRepository(
         "<if(from)> AND departure_at >= :from<endif><if(to)> AND departure_at \\< :to<endif>"
 
     @Transactional
-    fun saveInBatch(journeys: List<JourneyNew>): Int {
+    fun saveInBatchIgnoringConflicts(journeys: List<JourneyNew>): Int {
         val sql = """
             INSERT INTO journey (<columns>) VALUES (<values>) 
             ON CONFLICT ON CONSTRAINT journey_content_unique DO NOTHING

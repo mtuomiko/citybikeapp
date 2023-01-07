@@ -1,9 +1,8 @@
 package com.mtuomiko.citybikeapp.api
 
-import com.mtuomiko.citybikeapp.api.model.StationWithStatistics
-import com.mtuomiko.citybikeapp.common.model.TopStation
+import com.mtuomiko.citybikeapp.api.mapper.StationAPIMapper
+import com.mtuomiko.citybikeapp.api.model.StationDetailsWithStatisticsResponse
 import com.mtuomiko.citybikeapp.svc.StationService
-import com.mtuomiko.citybikeapp.svc.model.StationStatistics
 import io.micronaut.core.annotation.Nullable
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -22,13 +21,12 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.inject.Inject
 import java.time.LocalDate
-import com.mtuomiko.citybikeapp.api.model.StationStatistics as APIStationStatistics
-import com.mtuomiko.citybikeapp.api.model.TopStation as APITopStation
 
 @ExecuteOn(TaskExecutors.IO)
 @Controller("/station")
 @Tag(name = "station")
 class StationController(
+    @Inject private val mapper: StationAPIMapper,
     @Inject private val stationService: StationService
 ) {
 
@@ -49,28 +47,17 @@ class StationController(
         fromDate: LocalDate?,
         @Parameter(example = "2021-07-02") @QueryValue @Nullable
         toDate: LocalDate?
-    ): StationWithStatistics {
+    ): StationDetailsWithStatisticsResponse {
         if (fromDate != null && toDate != null && fromDate > toDate) {
-            throw BadRequestException("query parameter `from` timestamp cannot be after `to` timestamp")
+            throw BadRequestException("query parameter `fromDate` date cannot be after `toDate` date")
         }
         val station = stationService.getStationById(id) ?: throw NotFoundException("Station not found")
 
         val stationStatistics = stationService.getStationStatistics(id, fromDate, toDate)
 
-        return StationWithStatistics(
-            id = station.id,
-            nameFinnish = station.nameFinnish,
-            nameSwedish = station.nameSwedish,
-            nameEnglish = station.nameEnglish,
-            addressFinnish = station.addressFinnish,
-            addressSwedish = station.addressSwedish,
-            cityFinnish = station.cityFinnish,
-            citySwedish = station.citySwedish,
-            operator = station.operator,
-            capacity = station.capacity,
-            longitude = station.longitude,
-            latitude = station.latitude,
-            statistics = stationStatistics.toApiModel()
+        return StationDetailsWithStatisticsResponse(
+            station = mapper.toApi(station),
+            statistics = mapper.toApi(stationStatistics)
         )
     }
 
@@ -90,15 +77,4 @@ class StationController(
 
     class NotFoundException(message: String = "Not found", cause: Throwable? = null) : Throwable(message, cause)
     class BadRequestException(message: String = "Bad request", cause: Throwable? = null) : Throwable(message, cause)
-
-    private fun StationStatistics.toApiModel() = APIStationStatistics(
-        departureCount,
-        arrivalCount,
-        departureAverageDistance,
-        arrivalAverageDistance,
-        topStationsForArrivingHere.map { it.toApiModel() },
-        topStationsForDepartingTo.map { it.toApiModel() }
-    )
-
-    private fun TopStation.toApiModel() = APITopStation(id, nameFinnish, nameSwedish, nameEnglish, journeyCount)
 }

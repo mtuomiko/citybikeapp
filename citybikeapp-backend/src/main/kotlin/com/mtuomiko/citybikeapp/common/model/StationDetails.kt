@@ -3,7 +3,7 @@ package com.mtuomiko.citybikeapp.common.model
 import io.micronaut.serde.annotation.Serdeable
 
 @Serdeable
-data class Station(
+data class StationDetails(
     val id: Int,
     val nameFinnish: String,
     val nameSwedish: String,

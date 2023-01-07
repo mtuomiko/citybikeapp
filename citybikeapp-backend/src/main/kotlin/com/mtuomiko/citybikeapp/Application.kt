@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.info.Info
 @OpenAPIDefinition(
     info = Info(
         title = "City Bike App API",
-        version = "0.0.4a"
+        version = "0.0.5a"
     )
 )
 @OpenAPIInclude(classes = [HealthEndpoint::class])

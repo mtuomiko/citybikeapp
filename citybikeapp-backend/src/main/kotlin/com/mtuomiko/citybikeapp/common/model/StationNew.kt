@@ -1,6 +1,6 @@
 package com.mtuomiko.citybikeapp.common.model
 
-data class StationNew(
+class StationNew(
     val id: Int?,
     val nameFinnish: String,
     val nameSwedish: String,
