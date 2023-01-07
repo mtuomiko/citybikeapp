@@ -2,6 +2,8 @@ package com.mtuomiko.citybikeapp.api
 
 import com.mtuomiko.citybikeapp.api.mapper.StationAPIMapper
 import com.mtuomiko.citybikeapp.api.model.StationDetailsWithStatisticsResponse
+import com.mtuomiko.citybikeapp.api.model.StationsLimitedResponse
+import com.mtuomiko.citybikeapp.api.model.StationsResponse
 import com.mtuomiko.citybikeapp.svc.StationService
 import io.micronaut.core.annotation.Nullable
 import io.micronaut.http.HttpRequest
@@ -30,6 +32,46 @@ class StationController(
     @Inject private val stationService: StationService
 ) {
 
+    @Operation(
+        summary = "Get all stations",
+        description = "Get all stations with limited information"
+    )
+    @Get("/limited")
+    fun getAllStationsLimited(): StationsLimitedResponse {
+        val stationsLimited = stationService.getAllStationsLimited()
+        return StationsLimitedResponse(
+            stations = stationsLimited.map { mapper.toApi(it) }
+        )
+    }
+
+    /**
+     * @param search Optional search string to limit station results. Will look for matches in station names and street
+     * addresses. Separate search words with + symbol.
+     * @param page Optional pagination offset.
+     */
+    @Operation(
+        summary = "Get stations using pagination and optional text search.",
+        description = "Returns multiple stations with a maximum page size of 50. Page offset can be provided to " +
+            "paginate results. Optional search string can be used to limit matches."
+    )
+    @Get
+    fun getStations(
+        @Parameter(example = "kontu+tie") @QueryValue @Nullable
+        search: String?,
+        @Parameter(example = "50") @QueryValue @Nullable
+        page: Int?
+    ): StationsResponse {
+        val searchTokens = search?.split('+') ?: emptyList()
+        if (searchTokens.size > MAX_SEARCH_TERM_COUNT || searchTokens.any { it.length < MIN_SEARCH_TERM_LENGTH }) {
+            throw BadRequestException("check search terms")
+        }
+        if (page != null && page < 0) throw BadRequestException("page cannot be negative")
+
+        val stations = stationService.getStations(searchTokens, page ?: 0)
+
+        return StationsResponse(stations = stations.map { mapper.toApi(it) })
+    }
+
     /**
      * @param id Station ID
      * @param fromDate Earliest journey date to include in station statistics
@@ -39,7 +81,7 @@ class StationController(
     @Operation(
         summary = "Get single station information with statistics",
         description = "Single station information including journey statistics. Statistics are filtered using the " +
-            "optional query parameters. Note that malformed optional query parameters do not result in failure."
+            "optional query parameters. Note that malformed query parameters do not result in failure."
     )
     fun getStationWithStatistics(
         @PathVariable id: Int,
@@ -78,3 +120,6 @@ class StationController(
     class NotFoundException(message: String = "Not found", cause: Throwable? = null) : Throwable(message, cause)
     class BadRequestException(message: String = "Bad request", cause: Throwable? = null) : Throwable(message, cause)
 }
+
+const val MAX_SEARCH_TERM_COUNT = 3
+const val MIN_SEARCH_TERM_LENGTH = 3

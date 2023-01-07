@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { StationStatistics, StationDetailsWithStatisticsResponse, TopStation, StationDetails } from "generated";
 import { stationApi } from "clients";
 
-const StationDetails = () => {
+const StationDetailsView = () => {
   const params = useParams();
   const stationId = Number(params.stationId);
   const [response, setResponse] = useState<StationDetailsWithStatisticsResponse | undefined>(undefined);
@@ -39,7 +39,7 @@ const StationDetails = () => {
       <h3>{name}</h3>
       {stations.map(station =>
         <div key={station.id}>
-          <span><Link to={`/station/${station.id}`}>{station.nameFinnish}</Link>, {station.journeyCount} journeys</span>
+          <span><Link to={`/stations/${station.id}`}>{station.nameFinnish}</Link>, {station.journeyCount} journeys</span>
         </div>
       )}
     </div >
@@ -60,7 +60,7 @@ const StationDetails = () => {
       <li>longitude: {details.longitude}</li>
       <li>latitude: {details.latitude}</li>
     </ul>
-  )
+  );
 
   return (
     <div>
@@ -70,4 +70,4 @@ const StationDetails = () => {
   );
 };
 
-export default StationDetails;
+export default StationDetailsView;

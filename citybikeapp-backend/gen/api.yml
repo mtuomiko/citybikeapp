@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: City Bike App API
-  version: 0.0.5a
+  version: 0.0.6a
 paths:
   /health:
     get:
@@ -33,14 +33,62 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/HealthResult'
+  /station:
+    get:
+      tags:
+      - station
+      summary: Get stations using pagination and optional text search.
+      description: Returns multiple stations with a maximum page size of 50. Page
+        offset can be provided to paginate results. Optional search string can be
+        used to limit matches.
+      operationId: getStations
+      parameters:
+      - name: search
+        in: query
+        description: Optional search string to limit station results. Will look for
+          matches in station names and street addresses. Separate search words with
+          + symbol.
+        schema:
+          type: string
+          nullable: true
+        example: kontu+tie
+      - name: page
+        in: query
+        description: Optional pagination offset.
+        schema:
+          type: integer
+          format: int32
+          nullable: true
+        example: "50"
+      responses:
+        "200":
+          description: getStations 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StationsResponse'
+  /station/limited:
+    get:
+      tags:
+      - station
+      summary: Get all stations
+      description: Get all stations with limited information
+      operationId: getAllStationsLimited
+      responses:
+        "200":
+          description: getAllStationsLimited 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StationsLimitedResponse'
   /station/{id}:
     get:
       tags:
       - station
       summary: Get single station information with statistics
       description: Single station information including journey statistics. Statistics
-        are filtered using the optional query parameters. Note that malformed optional
-        query parameters do not result in failure.
+        are filtered using the optional query parameters. Note that malformed query
+        parameters do not result in failure.
       operationId: getStationWithStatistics
       parameters:
       - name: id
@@ -111,6 +159,30 @@ components:
           nullable: true
     Object:
       type: object
+    Station:
+      required:
+      - addressFinnish
+      - capacity
+      - cityFinnish
+      - id
+      - nameFinnish
+      - operator
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        nameFinnish:
+          type: string
+        addressFinnish:
+          type: string
+        cityFinnish:
+          type: string
+        operator:
+          type: string
+        capacity:
+          type: integer
+          format: int32
     StationDetails:
       required:
       - addressFinnish
@@ -165,6 +237,17 @@ components:
           $ref: '#/components/schemas/StationDetails'
         statistics:
           $ref: '#/components/schemas/StationStatistics'
+    StationLimited:
+      required:
+      - id
+      - nameFinnish
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        nameFinnish:
+          type: string
     StationStatistics:
       required:
       - arrivalAverageDistance
@@ -195,6 +278,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TopStation'
+    StationsLimitedResponse:
+      required:
+      - stations
+      type: object
+      properties:
+        stations:
+          type: array
+          items:
+            $ref: '#/components/schemas/StationLimited'
+    StationsResponse:
+      required:
+      - stations
+      type: object
+      properties:
+        stations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Station'
     TopStation:
       required:
       - id

@@ -36,6 +36,7 @@ flyway:
       enabled: true
       defaultSchema: citybikeapp
 citybikeapp:
+  defaultPageSize: ${CITYBIKEAPP_DEFAULT_PAGE_SIZE:50}
   dataLoader:
     batchSize: ${CITYBIKEAPP_DATALOADER_BATCH_SIZE:1000}
     minimumJourneyDistance: ${CITYBIKEAPP_DATALOADER_MIN_DISTANCE:10}
