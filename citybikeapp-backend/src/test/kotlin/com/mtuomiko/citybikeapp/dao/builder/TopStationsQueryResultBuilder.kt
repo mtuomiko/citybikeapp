@@ -1,4 +1,4 @@
-package com.mtuomiko.citybikeapp.dao
+package com.mtuomiko.citybikeapp.dao.builder
 
 import com.mtuomiko.citybikeapp.dao.model.TopStationsQueryResult
 

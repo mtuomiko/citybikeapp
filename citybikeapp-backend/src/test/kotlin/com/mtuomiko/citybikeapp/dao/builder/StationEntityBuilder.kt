@@ -1,8 +1,8 @@
-package com.mtuomiko.citybikeapp.dao
+package com.mtuomiko.citybikeapp.dao.builder
 
 import com.mtuomiko.citybikeapp.dao.entity.StationEntity
 
-class StationBuilder {
+class StationEntityBuilder {
     var id: Int = 0
     var nameFinnish: String = "Joku Paikka"
     var nameSwedish: String = "Någon Plats"
@@ -18,6 +18,8 @@ class StationBuilder {
 
     fun id(id: Int) = apply { this.id = id }
     fun nameFinnish(name: String) = apply { this.nameFinnish = name }
+    fun nameSwedish(name: String) = apply { this.nameSwedish = name }
+    fun nameEnglish(name: String) = apply { this.nameEnglish = name }
 
     fun build() = StationEntity(
         id,

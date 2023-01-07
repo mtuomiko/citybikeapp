@@ -3,8 +3,8 @@ package com.mtuomiko.citybikeapp.api.model
 import io.micronaut.serde.annotation.Serdeable
 import io.swagger.v3.oas.annotations.media.Schema
 
-@Schema(name = "StationDetails")
 @Serdeable
+@Schema(name = "StationDetails")
 data class APIStationDetails(
     val id: Int,
     val nameFinnish: String,
@@ -20,9 +20,27 @@ data class APIStationDetails(
     val latitude: Double
 )
 
-@Schema(name = "StationStatistics")
 @Serdeable
-class APIStationStatistics(
+@Schema(name = "Station")
+data class APIStation(
+    val id: Int,
+    val nameFinnish: String,
+    val addressFinnish: String,
+    val cityFinnish: String,
+    val operator: String,
+    val capacity: Int
+)
+
+@Serdeable
+@Schema(name = "StationLimited")
+data class APIStationLimited(
+    val id: Int,
+    val nameFinnish: String
+)
+
+@Serdeable
+@Schema(name = "StationStatistics")
+data class APIStationStatistics(
     val departureCount: Long,
     val arrivalCount: Long,
     val departureAverageDistance: Double,
@@ -31,8 +49,8 @@ class APIStationStatistics(
     val topStationsForDepartingTo: List<APITopStation>
 )
 
-@Schema(name = "TopStation")
 @Serdeable
+@Schema(name = "TopStation")
 class APITopStation(
     val id: Int,
     val nameFinnish: String,

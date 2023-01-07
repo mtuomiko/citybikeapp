@@ -1,5 +1,6 @@
 package com.mtuomiko.citybikeapp.dao
 
+import com.mtuomiko.citybikeapp.dao.builder.StationEntityBuilder
 import com.mtuomiko.citybikeapp.dao.entity.StationEntity
 import com.mtuomiko.citybikeapp.dao.repository.StationRepository
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -12,7 +13,7 @@ private class StationRepositoryTest(
 ) {
     @Test
     fun `Valid station entity can be saved and queried`() {
-        val stationEntity = StationBuilder().build()
+        val stationEntity = StationEntityBuilder().build()
 
         val returnedStation = stationRepository.save(stationEntity)
 
