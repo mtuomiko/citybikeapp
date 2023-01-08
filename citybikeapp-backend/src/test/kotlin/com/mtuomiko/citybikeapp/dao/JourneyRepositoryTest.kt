@@ -15,11 +15,11 @@ class JourneyRepositoryTest(
      */
     @Test
     fun `Trip statistics query can be run`() {
-        val result = journeyRepository.getJourneyStatisticsByStationId(100)
+        journeyRepository.getJourneyStatisticsByStationId(100)
     }
 
     @Test
     fun `Top stations query can be run`() {
-        val result = journeyRepository.getTopStationsByStationId(100)
+        journeyRepository.getTopStationsByStationId(100)
     }
 }

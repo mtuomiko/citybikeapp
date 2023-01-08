@@ -23,7 +23,10 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.inject.Inject
+import mu.KotlinLogging
 import java.time.LocalDate
+
+private val logger = KotlinLogging.logger {}
 
 @ExecuteOn(TaskExecutors.IO)
 @Controller("/station")
@@ -69,6 +72,8 @@ class StationController(
         @Parameter(example = "25") @QueryValue @Nullable
         pageSize: Int?
     ): StationsResponse {
+        logger.debug { "Fetching stations with search: $search, page: $page, pageSize: $pageSize" }
+
         val searchTokens = search?.split('+') ?: emptyList()
         if (searchTokens.size > MAX_SEARCH_TERM_COUNT || searchTokens.any { it.length < MIN_SEARCH_TERM_LENGTH }) {
             throw BadRequestException("check search terms")
