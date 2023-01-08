@@ -1,13 +1,14 @@
 package com.mtuomiko.citybikeapp.dao.repository
 
-import com.mtuomiko.citybikeapp.common.model.Station
 import com.mtuomiko.citybikeapp.common.model.StationNew
 import com.mtuomiko.citybikeapp.dao.entity.StationEntity
-import com.mtuomiko.citybikeapp.dao.mapper.StationRowMapper
+import com.mtuomiko.citybikeapp.dao.mapper.StationSearchRowMapper
 import com.mtuomiko.citybikeapp.dao.model.StationInsert
 import com.mtuomiko.citybikeapp.dao.model.StationLimitedProjection
 import com.mtuomiko.citybikeapp.dao.model.StationProjection
+import com.mtuomiko.citybikeapp.dao.model.StationSearchResult
 import io.micronaut.data.jdbc.annotation.JdbcRepository
+import io.micronaut.data.model.Page
 import io.micronaut.data.model.Pageable
 import io.micronaut.data.repository.PageableRepository
 import org.jdbi.v3.core.Jdbi
@@ -38,7 +39,7 @@ abstract class StationRepository(
     )
     private val columns = stationMapping.keys.toList()
     private val bindValues = stationMapping.values.toList()
-    private val stationMapper = StationRowMapper()
+    private val stationSearchMapper = StationSearchRowMapper()
 
     @Transactional
     fun saveInBatchIgnoringConflicts(stations: List<StationNew>): Int {
@@ -63,9 +64,12 @@ abstract class StationRepository(
      * match_count depends on the search pattern.
      */
     @Transactional
-    fun searchUsingRegex(pattern: String, limit: Int, offset: Int): List<Station> {
+    fun searchUsingRegex(pattern: String, limit: Int, offset: Int): List<StationSearchResult> {
         val sql = """
-        SELECT match_count, id, name_finnish, address_finnish, city_finnish, operator, capacity FROM station, LATERAL (
+        SELECT 
+            match_count, count(*) OVER() AS total_count, id, name_finnish, address_finnish, city_finnish, operator, 
+            capacity FROM station, 
+        LATERAL (
             SELECT count(*) as match_count
             FROM regexp_matches(lower(
                 name_finnish || ' ' || address_finnish || ' ' || name_swedish || ' ' || address_swedish || ' ' ||
@@ -83,12 +87,12 @@ abstract class StationRepository(
                 .bind("pattern", pattern)
                 .bind("limit", limit)
                 .bind("offset", offset)
-                .map(stationMapper)
+                .map(stationSearchMapper)
                 .list()
         }
     }
 
     abstract fun getAll(): List<StationLimitedProjection>
 
-    abstract fun list(pageable: Pageable): List<StationProjection>
+    abstract fun list(pageable: Pageable): Page<StationProjection>
 }

@@ -1,6 +1,7 @@
 package com.mtuomiko.citybikeapp.api
 
 import com.mtuomiko.citybikeapp.api.mapper.StationAPIMapper
+import com.mtuomiko.citybikeapp.api.model.Meta
 import com.mtuomiko.citybikeapp.api.model.StationDetailsWithStatisticsResponse
 import com.mtuomiko.citybikeapp.api.model.StationsLimitedResponse
 import com.mtuomiko.citybikeapp.api.model.StationsResponse
@@ -48,28 +49,39 @@ class StationController(
      * @param search Optional search string to limit station results. Will look for matches in station names and street
      * addresses. Separate search words with + symbol.
      * @param page Optional pagination offset.
+     * @param pageSize Optional page size.
      */
     @Operation(
         summary = "Get stations using pagination and optional text search.",
-        description = "Returns multiple stations with a maximum page size of 50. Page offset can be provided to " +
-            "paginate results. Optional search string can be used to limit matches."
+        description = "Returns multiple stations with a maximum page size of given page size parameter. If page size" +
+            " is not defined then application default is used. Page number can be provided to paginate results. " +
+            "Optional search string can be used to limit matches. Note that if paginating query params result in no " +
+            "stations, the total pages count might not hold true! That is, there could still be possible earlier " +
+            "results."
     )
     @Get
+    @Suppress("ThrowsCount")
     fun getStations(
         @Parameter(example = "kontu+tie") @QueryValue @Nullable
         search: String?,
-        @Parameter(example = "50") @QueryValue @Nullable
-        page: Int?
+        @Parameter(example = "3") @QueryValue @Nullable
+        page: Int?,
+        @Parameter(example = "25") @QueryValue @Nullable
+        pageSize: Int?
     ): StationsResponse {
         val searchTokens = search?.split('+') ?: emptyList()
         if (searchTokens.size > MAX_SEARCH_TERM_COUNT || searchTokens.any { it.length < MIN_SEARCH_TERM_LENGTH }) {
             throw BadRequestException("check search terms")
         }
         if (page != null && page < 0) throw BadRequestException("page cannot be negative")
+        if (pageSize != null && pageSize < 0) throw BadRequestException("pageSize cannot be negative")
 
-        val stations = stationService.getStations(searchTokens, page ?: 0)
+        val stations = stationService.getStations(searchTokens, page, pageSize)
 
-        return StationsResponse(stations = stations.map { mapper.toApi(it) })
+        return StationsResponse(
+            stations = stations.content.map { mapper.toApi(it) },
+            meta = Meta(totalPages = stations.totalPages)
+        )
     }
 
     /**

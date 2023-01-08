@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: City Bike App API
-  version: 0.0.6a
+  version: 0.0.7a
 paths:
   /health:
     get:
@@ -38,9 +38,12 @@ paths:
       tags:
       - station
       summary: Get stations using pagination and optional text search.
-      description: Returns multiple stations with a maximum page size of 50. Page
-        offset can be provided to paginate results. Optional search string can be
-        used to limit matches.
+      description: "Returns multiple stations with a maximum page size of given page\
+        \ size parameter. If page size is not defined then application default is\
+        \ used. Page number can be provided to paginate results. Optional search string\
+        \ can be used to limit matches. Note that if paginating query params result\
+        \ in no stations, the total pages count might not hold true! That is, there\
+        \ could still be possible earlier results."
       operationId: getStations
       parameters:
       - name: search
@@ -59,7 +62,15 @@ paths:
           type: integer
           format: int32
           nullable: true
-        example: "50"
+        example: "3"
+      - name: pageSize
+        in: query
+        description: Optional page size.
+        schema:
+          type: integer
+          format: int32
+          nullable: true
+        example: "25"
       responses:
         "200":
           description: getStations 200 response
@@ -157,6 +168,14 @@ components:
           type: integer
           format: int32
           nullable: true
+    Meta:
+      required:
+      - totalPages
+      type: object
+      properties:
+        totalPages:
+          type: integer
+          format: int32
     Object:
       type: object
     Station:
@@ -289,6 +308,7 @@ components:
             $ref: '#/components/schemas/StationLimited'
     StationsResponse:
       required:
+      - meta
       - stations
       type: object
       properties:
@@ -296,6 +316,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Station'
+        meta:
+          $ref: '#/components/schemas/Meta'
     TopStation:
       required:
       - id

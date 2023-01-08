@@ -15,5 +15,6 @@ data class StationsLimitedResponse(
 
 @Serdeable
 class StationsResponse(
-    val stations: List<APIStation>
+    val stations: List<APIStation>,
+    val meta: Meta
 )

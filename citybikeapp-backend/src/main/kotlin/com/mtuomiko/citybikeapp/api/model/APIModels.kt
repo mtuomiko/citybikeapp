@@ -58,3 +58,8 @@ class APITopStation(
     val nameEnglish: String,
     val journeyCount: Long
 )
+
+@Serdeable
+class Meta(
+    val totalPages: Int
+)

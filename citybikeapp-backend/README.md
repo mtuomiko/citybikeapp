@@ -30,13 +30,14 @@ overriding using environment variables (like Spring does) but these are explicit
 
 #### Common
 
-| Environment variable            | Description                                  | Default                                                   | Required | Example                                     |
-|---------------------------------|----------------------------------------------|-----------------------------------------------------------|----------|---------------------------------------------|
-| `PORT`                          | Server port                                  | `8080`                                                    |          |                                             |
-| `DATABASE_CONNECTION_URL`       | JDBC connection URL                          | `jdbc:postgresql://host.docker.internal:5432/citybikeapp` |          | `jdbc:postgresql://foo.bar:5432/packlister` |
-| `DATABASE_CONNECTION_USERNAME`  | DB username                                  | `postgres`                                                |          | `foo`                                       |
-| `DATABASE_CONNECTION_PASSWORD`  | DB password                                  | `Hunter2`                                                 |          | `bar`                                       |
-| `CITYBIKEAPP_DEFAULT_PAGE_SIZE` | Default page size used in paginating queries | `50`                                                      |          |                                             |
+| Environment variable            | Description                                                  | Default                                                   | Required | Example                                     |
+|---------------------------------|--------------------------------------------------------------|-----------------------------------------------------------|----------|---------------------------------------------|
+| `PORT`                          | Server port                                                  | `8080`                                                    |          |                                             |
+| `DATABASE_CONNECTION_URL`       | JDBC connection URL                                          | `jdbc:postgresql://host.docker.internal:5432/citybikeapp` |          | `jdbc:postgresql://foo.bar:5432/packlister` |
+| `DATABASE_CONNECTION_USERNAME`  | DB username                                                  | `postgres`                                                |          | `foo`                                       |
+| `DATABASE_CONNECTION_PASSWORD`  | DB password                                                  | `Hunter2`                                                 |          | `bar`                                       |
+| `CITYBIKEAPP_DEFAULT_PAGE_SIZE` | Default page size used in paginating queries                 | `50`                                                      |          |                                             |
+| `CITYBIKEAPP_MAX_PAGE_SIZE`     | Maximum client provided page size used in paginating queries | `50`                                                      |          |                                             |
 
 #### Data loader specific environment variables
 
