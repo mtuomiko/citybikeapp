@@ -7,7 +7,7 @@ plugins {
     id("org.jetbrains.kotlin.kapt").version("1.6.21")
     id("org.jetbrains.kotlin.plugin.allopen").version("1.6.21")
     id("com.github.johnrengelman.shadow").version("7.1.2")
-    id("io.micronaut.application").version("3.6.3")
+    id("io.micronaut.application").version("3.6.7")
 
     id("io.gitlab.arturbosch.detekt").version("1.22.0")
     id("com.diffplug.spotless").version("6.12.0")
@@ -50,10 +50,13 @@ dependencies {
     implementation("io.micronaut:micronaut-validation")
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.7.0")
     implementation("io.github.microutils:kotlin-logging-jvm:2.1.23") // match logback version
-    implementation("io.micronaut.openapi:micronaut-openapi") // include annotations
+    implementation("io.micronaut.openapi:micronaut-openapi") { // include annotations
+        exclude(group = "org.slf4j", module = "slf4j-nop") // for some reason openapi tries to include this
+    }
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
 
     compileOnly("jakarta.persistence:jakarta.persistence-api:3.0.0")
+    compileOnly("com.google.code.findbugs:jsr305") // "unknown enum constant When.MAYBE" warning on kaptKotlin task
 
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("org.postgresql:postgresql")
@@ -64,6 +67,9 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:testcontainers")
+
+    // "unknown enum constant GenerationType.IDENTITY" warning on kaptTestKotlin task
+    testCompileOnly("jakarta.persistence:jakarta.persistence-api:3.0.0")
 }
 
 application {
@@ -101,7 +107,7 @@ configurations.all {
             substitute(module("io.micronaut:micronaut-jackson-databind"))
                 .using(module("io.micronaut.serde:micronaut-serde-jackson:1.3.3"))
         }
-        force("com.github.ben-manes.caffeine:caffeine:3.0.3")
+        force("com.github.ben-manes.caffeine:caffeine:3.0.3") // jdbi has direct dependency
     }
 }
 
