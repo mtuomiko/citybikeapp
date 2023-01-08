@@ -10,6 +10,7 @@ import com.mtuomiko.citybikeapp.api.model.StationsResponse
 import com.mtuomiko.citybikeapp.dao.builder.StationEntityBuilder
 import com.mtuomiko.citybikeapp.dao.entity.StationEntity
 import com.mtuomiko.citybikeapp.dao.repository.StationRepository
+import com.mtuomiko.citybikeapp.svc.PaginationConfig
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.BlockingHttpClient
@@ -32,6 +33,9 @@ class StationApiTest {
     @Inject
     lateinit var stationRepository: StationRepository
 
+    @Inject
+    lateinit var paginationConfig: PaginationConfig
+
     private lateinit var client: BlockingHttpClient
     private lateinit var testStations: List<StationEntity>
 
@@ -39,16 +43,16 @@ class StationApiTest {
     fun setup() {
         client = stationClient.toBlocking()
 
-        val newStations = List(10) { StationEntityBuilder().id(it + 1).build() } +
-            List(10) {
-                StationEntityBuilder().id(it + 11)
+        val newStations = List(100) { StationEntityBuilder().id(it + 1).build() } +
+            List(100) {
+                StationEntityBuilder().id(it + 101)
                     .nameFinnish("Toinen Paikka")
                     .nameSwedish("Andra Platsen")
                     .nameEnglish("Other Place")
                     .build()
             }
         val createdStations = stationRepository.saveAll(newStations)
-        testStations = createdStations.toList()
+        testStations = createdStations.sortedBy { it.id }.toList()
     }
 
     @AfterEach
@@ -89,6 +93,7 @@ class StationApiTest {
                 latitude
             )
         }
+        // no journeys in test data so stats should be zero/empty
         val expectedStatistics = APIStationStatistics(0, 0, 0.0, 0.0, emptyList(), emptyList())
 
         assertThat(response.status).isEqualTo(HttpStatus.OK)
@@ -97,15 +102,102 @@ class StationApiTest {
     }
 
     @Test
-    fun `Stations endpoint can be used with search term`() {
+    fun `Stations endpoint can be used without params and response uses default pagination`() {
+        val request = HttpRequest.GET<Any>("")
+        val response = client.exchange(request, StationsResponse::class.java)
+
+        val expected = testStations
+            .sortedBy { it.id }
+            .take(paginationConfig.defaultPageSize)
+            .map { with(it) { APIStation(id, nameFinnish, addressFinnish, cityFinnish, operator, capacity) } }
+
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.body()!!.meta.totalPages).isEqualTo(4)
+    }
+
+    @Test
+    fun `Stations endpoint can be used with search term and response uses default pagination`() {
         val request = HttpRequest.GET<Any>("?search=toinen")
         val response = client.exchange(request, StationsResponse::class.java)
 
         val expected = testStations
             .filter { it.nameFinnish.contains("toinen", ignoreCase = true) }
+            .sortedBy { it.id }
+            .take(paginationConfig.defaultPageSize)
             .map { with(it) { APIStation(id, nameFinnish, addressFinnish, cityFinnish, operator, capacity) } }
 
         assertThat(response.status).isEqualTo(HttpStatus.OK)
         assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.body()!!.meta.totalPages).isEqualTo(2)
+    }
+
+    @Test
+    fun `Stations endpoint can be used with page number and response uses default pagination`() {
+        val request = HttpRequest.GET<Any>("?page=1")
+        val response = client.exchange(request, StationsResponse::class.java)
+
+        val expected = testStations
+            .sortedBy { it.id }
+            .drop(paginationConfig.defaultPageSize)
+            .take(paginationConfig.defaultPageSize)
+            .map { with(it) { APIStation(id, nameFinnish, addressFinnish, cityFinnish, operator, capacity) } }
+
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.body()!!.meta.totalPages).isEqualTo(4)
+    }
+
+    @Test
+    fun `Stations endpoint can be used with search term and page number and response uses default pagination`() {
+        val request = HttpRequest.GET<Any>("?search=toinen&page=1")
+        val response = client.exchange(request, StationsResponse::class.java)
+
+        val expected = testStations
+            .filter { it.nameFinnish.contains("toinen", ignoreCase = true) }
+            .sortedBy { it.id }
+            .drop(paginationConfig.defaultPageSize)
+            .take(paginationConfig.defaultPageSize)
+            .map { with(it) { APIStation(id, nameFinnish, addressFinnish, cityFinnish, operator, capacity) } }
+
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.body()!!.meta.totalPages).isEqualTo(2)
+    }
+
+    @Test
+    fun `Stations endpoint can be used with search term and page size`() {
+        val pageSize = 25
+        val request = HttpRequest.GET<Any>("?search=toinen&pageSize=$pageSize")
+        val response = client.exchange(request, StationsResponse::class.java)
+
+        val expected = testStations
+            .filter { it.nameFinnish.contains("toinen", ignoreCase = true) }
+            .sortedBy { it.id }
+            .take(pageSize)
+            .map { with(it) { APIStation(id, nameFinnish, addressFinnish, cityFinnish, operator, capacity) } }
+
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.body()!!.meta.totalPages).isEqualTo(4)
+    }
+
+    @Test
+    fun `Stations endpoint can be used with search term, page number and page size`() {
+        val page = 2
+        val pageSize = 25
+        val request = HttpRequest.GET<Any>("?search=toinen&page=$page&pageSize=$pageSize")
+        val response = client.exchange(request, StationsResponse::class.java)
+
+        val expected = testStations
+            .filter { it.nameFinnish.contains("toinen", ignoreCase = true) }
+            .sortedBy { it.id }
+            .drop(page * pageSize)
+            .take(pageSize)
+            .map { with(it) { APIStation(id, nameFinnish, addressFinnish, cityFinnish, operator, capacity) } }
+
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.body()!!.meta.totalPages).isEqualTo(4)
     }
 }

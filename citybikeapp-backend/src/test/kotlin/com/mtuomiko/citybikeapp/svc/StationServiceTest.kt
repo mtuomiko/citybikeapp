@@ -15,7 +15,8 @@ import java.time.ZoneId
 class StationServiceTest {
     private val stationDao = mockk<StationDao>()
     private val statisticsDao = mockk<StatisticsDao>()
-    private val stationService = StationService(stationDao, statisticsDao)
+    private val paginationConfig = mockk<PaginationConfig>()
+    private val stationService = StationService(stationDao, statisticsDao, paginationConfig)
     private val timezone = ZoneId.of("Europe/Helsinki")
 
     @Test
