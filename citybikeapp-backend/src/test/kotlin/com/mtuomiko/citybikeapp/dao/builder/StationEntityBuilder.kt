@@ -1,6 +1,7 @@
 package com.mtuomiko.citybikeapp.dao.builder
 
 import com.mtuomiko.citybikeapp.dao.entity.StationEntity
+import java.time.Instant
 
 class StationEntityBuilder {
     var id: Int = 0
@@ -15,6 +16,8 @@ class StationEntityBuilder {
     var capacity: Int = 10
     var longitude: Double = 24.9897538768656
     var latitude: Double = 60.2807560752423
+    var modifiedAt: Instant = Instant.parse("2022-11-15T18:35:24Z")
+    var createdAt: Instant = Instant.parse("2022-11-15T18:35:24Z")
 
     fun id(id: Int) = apply { this.id = id }
     fun nameFinnish(name: String) = apply { this.nameFinnish = name }
@@ -33,6 +36,8 @@ class StationEntityBuilder {
         operator,
         capacity,
         longitude,
-        latitude
+        latitude,
+        modifiedAt,
+        createdAt
     )
 }

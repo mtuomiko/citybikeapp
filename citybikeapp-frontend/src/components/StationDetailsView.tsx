@@ -39,7 +39,7 @@ const StationDetailsView = () => {
       <h3>{name}</h3>
       {stations.map(station =>
         <div key={station.id}>
-          <span><Link to={`/stations/${station.id}`}>{station.nameFinnish}</Link>, {station.journeyCount} journeys</span>
+          <span><Link to={`/stations/${station.id}`}>{station.id}</Link>, {station.journeyCount} journeys</span>
         </div>
       )}
     </div >

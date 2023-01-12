@@ -8,8 +8,6 @@ import com.mtuomiko.citybikeapp.dao.entity.StationEntity
 import com.mtuomiko.citybikeapp.dao.model.StationProjection
 import com.mtuomiko.citybikeapp.dao.model.StationSearchResult
 import com.mtuomiko.citybikeapp.dao.repository.StationRepository
-import io.micronaut.data.model.Pageable
-import io.micronaut.data.model.Sort
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlin.math.ceil
@@ -18,10 +16,10 @@ import kotlin.math.ceil
 class StationDao(
     @Inject private val stationRepository: StationRepository
 ) {
-    fun getStationById(stationId: Int): StationDetails? = stationRepository.findById(stationId)
-        .orElse(null)?.toDetailsModel()
+    fun getStationById(stationId: Int): StationDetails? = stationRepository.findById(stationId)?.toDetailsModel()
 
-    fun getAllStationsLimited() = stationRepository.getAll().map { StationLimited(it.id, it.nameFinnish) }
+    fun getAllStationsLimited() =
+        stationRepository.getAllStationsLimited().map { StationLimited(it.id, it.nameFinnish) }
 
     fun getStations(searchTokens: List<String>, page: Int, pageSize: Int): TotalPagesWith<List<Station>> {
         if (searchTokens.isEmpty()) return getStations(page, pageSize)
@@ -45,10 +43,16 @@ class StationDao(
     }
 
     private fun getStations(page: Int, pageSize: Int): TotalPagesWith<List<Station>> {
-        val pageable = Pageable.from(page, pageSize, Sort.of(Sort.Order.asc("id")))
-        val stationsPage = stationRepository.list(pageable)
+        val stationsResult = stationRepository.listStations(pageSize, page * pageSize)
 
-        return TotalPagesWith(content = stationsPage.content.map { it.toModel() }, totalPages = stationsPage.totalPages)
+        return if (stationsResult.isEmpty()) {
+            TotalPagesWith(content = emptyList(), totalPages = 1)
+        } else {
+            TotalPagesWith(
+                content = stationsResult.map { it.toModel() },
+                totalPages = totalPageCount(stationsResult.first().totalCount, pageSize)
+            )
+        }
     }
 
     private fun StationEntity.toDetailsModel(): StationDetails = StationDetails(

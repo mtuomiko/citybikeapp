@@ -322,20 +322,11 @@ components:
       required:
       - id
       - journeyCount
-      - nameEnglish
-      - nameFinnish
-      - nameSwedish
       type: object
       properties:
         id:
           type: integer
           format: int32
-        nameFinnish:
-          type: string
-        nameSwedish:
-          type: string
-        nameEnglish:
-          type: string
         journeyCount:
           type: integer
           format: int64
