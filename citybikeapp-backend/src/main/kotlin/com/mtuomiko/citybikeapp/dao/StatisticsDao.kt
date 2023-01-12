@@ -20,12 +20,12 @@ class StatisticsDao(
         val arrivalStations = topStationsQueryResult
             .filter { it.arrivalStationId == stationId }
             .sortedByDescending { it.journeyCount }
-            .map { with(it) { TopStation(departureStationId, nameFinnish, nameSwedish, nameEnglish, journeyCount) } }
+            .map { TopStation(it.departureStationId, it.journeyCount) }
 
         val departureStations = topStationsQueryResult
             .filter { it.departureStationId == stationId }
             .sortedByDescending { it.journeyCount }
-            .map { with(it) { TopStation(arrivalStationId, nameFinnish, nameSwedish, nameEnglish, journeyCount) } }
+            .map { TopStation(it.arrivalStationId, it.journeyCount) }
 
         return TopStations(forArrivingHere = arrivalStations, forDepartingTo = departureStations)
     }

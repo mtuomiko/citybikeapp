@@ -53,9 +53,6 @@ data class APIStationStatistics(
 @Schema(name = "TopStation")
 class APITopStation(
     val id: Int,
-    val nameFinnish: String,
-    val nameSwedish: String,
-    val nameEnglish: String,
     val journeyCount: Long
 )
 

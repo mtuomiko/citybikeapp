@@ -6,17 +6,11 @@ class TopStationsQueryResultBuilder {
     var departureStationId: Int = 1
     var arrivalStationId: Int = 2
     var journeyCount: Long = (1..100).random().toLong()
-    var nameFinnish: String = "Asema"
-    var nameSwedish: String = "Station"
-    var nameEnglish: String = "Station"
 
     fun build() = TopStationsQueryResult(
         departureStationId,
         arrivalStationId,
-        journeyCount,
-        nameFinnish,
-        nameSwedish,
-        nameEnglish
+        journeyCount
     )
 
     fun departureStationId(id: Int) = apply { this.departureStationId = id }

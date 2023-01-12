@@ -14,3 +14,5 @@ complexity:
     # Various data holding objects can have large constructors. Could use ignoreDataClasses also but that would require
     # data classes possibly needlessly.
     constructorThreshold: 99
+  TooManyFunctions:
+    ignorePrivate: true

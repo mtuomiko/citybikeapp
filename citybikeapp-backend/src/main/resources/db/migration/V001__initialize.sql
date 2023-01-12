@@ -8,7 +8,7 @@ CREATE TABLE station (
     city_finnish    text             NOT NULL,
     city_swedish    text             NOT NULL,
     operator        text             NOT NULL,
-    capacity        smallint         NOT NULL,
+    capacity        integer          NOT NULL,
     longitude       double precision NOT NULL,
     latitude        double precision NOT NULL,
     modified_at     timestamptz      NOT NULL,

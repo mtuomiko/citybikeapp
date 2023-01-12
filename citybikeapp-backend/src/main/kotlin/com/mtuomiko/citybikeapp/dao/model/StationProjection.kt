@@ -1,8 +1,5 @@
 package com.mtuomiko.citybikeapp.dao.model
 
-import io.micronaut.core.annotation.Introspected
-
-@Introspected
 class StationProjection(
     val id: Int,
     val nameFinnish: String,

@@ -47,7 +47,7 @@ class DataLoader : Runnable {
         try {
             val millis = measureTimeMillis {
                 processStations(config.stationUrl)
-                validStationIds = stationRepository.findAll().map { it.id }
+                validStationIds = stationRepository.getAllStationIds()
                 processJourneys(config.journeyUrls)
             }
             val duration = Duration.ofMillis(millis)

@@ -9,3 +9,7 @@ logger:
 #    org:
 #      jdbi: DEBUG
 #      stringtemplate: DEBUG
+#    org:
+#      jooq:
+#        tools: DEBUG
+#          LoggerListener: DEBUG

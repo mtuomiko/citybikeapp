@@ -2,3 +2,8 @@ datasources:
   default:
     url: jdbc:tc:postgresql:14:///postgres
     driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+#logger:
+#  levels:
+#    org:
+#      jooq: DEBUG
+#        tools: DEBUG
