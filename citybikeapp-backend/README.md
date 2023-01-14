@@ -59,3 +59,8 @@ overriding using environment variables (like Spring does) but these are explicit
   database container is adding some overhead.
 * Enable strict checking for nullable query params when the option becomes available,
   see [micronaut issue 5135](https://github.com/micronaut-projects/micronaut-core/issues/5135)
+* Switch to abstract controller/interface generation from OpenAPI specs when a suitable code generator supports Jakarta
+  EE
+  annotations. Annotation based API writing is getting
+  ridiculous. [java-micronaut-server](https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/java-micronaut-server.md)
+  generator has the `useJakartaEe` setting, but it's not implemented.

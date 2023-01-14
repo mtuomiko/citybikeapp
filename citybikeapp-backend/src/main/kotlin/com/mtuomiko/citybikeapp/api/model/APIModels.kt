@@ -2,6 +2,7 @@ package com.mtuomiko.citybikeapp.api.model
 
 import io.micronaut.serde.annotation.Serdeable
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.ZonedDateTime
 
 @Serdeable
 @Schema(name = "StationDetails")
@@ -59,4 +60,21 @@ class APITopStation(
 @Serdeable
 class Meta(
     val totalPages: Int
+)
+
+@Serdeable
+class CursorMeta(
+    val nextCursor: String?
+)
+
+@Serdeable
+@Schema(name = "Journey")
+data class APIJourney(
+    val id: Long,
+    val departureTime: ZonedDateTime,
+    val arrivalTime: ZonedDateTime,
+    val departureStationId: Int,
+    val arrivalStationId: Int,
+    val distance: Int,
+    val duration: Int
 )

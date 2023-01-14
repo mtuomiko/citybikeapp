@@ -1,11 +1,12 @@
 package com.mtuomiko.citybikeapp.dao.repository
 
 import com.mtuomiko.citybikeapp.common.model.JourneyNew
+import com.mtuomiko.citybikeapp.common.model.PaginationKeyset
 import com.mtuomiko.citybikeapp.dao.entity.JourneyEntity
 import com.mtuomiko.citybikeapp.dao.model.JourneyStatistics
 import com.mtuomiko.citybikeapp.dao.model.TopStationsQueryResult
+import com.mtuomiko.citybikeapp.jooq.tables.Journey.Companion.JOURNEY
 import com.mtuomiko.citybikeapp.jooq.tables.records.JourneyRecord
-import com.mtuomiko.citybikeapp.jooq.tables.references.JOURNEY
 import jakarta.inject.Singleton
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -13,35 +14,74 @@ import org.jooq.Record3
 import org.jooq.SelectLimitPercentStep
 import org.jooq.impl.DSL.avg
 import org.jooq.impl.DSL.count
+import java.security.InvalidParameterException
 import java.time.Instant
 
 @Singleton
 class JourneyRepository(private val ctx: DSLContext) {
+    // null offset id argument position to use for fields insert of new journeys without ids
+    private val nullOffsetWithoutIdFields = listOf(null) + JOURNEY.fields().filter { it != JOURNEY.ID }
+
+    fun saveAll(journeys: List<JourneyEntity>): List<JourneyEntity> {
+        return journeys.map(::save)
+    }
+
+    fun save(journey: JourneyEntity): JourneyEntity {
+        return ctx.insertInto(JOURNEY).columns(JOURNEY.fields().toList()).values(journey.toRecord()).returning()
+            .fetchOne()!!.toEntity()
+    }
+
+    fun deleteAll() {
+        ctx.delete(JOURNEY).execute()
+    }
+
     fun findAll(): List<JourneyEntity> {
         return ctx.selectFrom(JOURNEY).fetch().map { it.toEntity() }
     }
 
-    private fun JourneyRecord.toEntity() = JourneyEntity(
-        id!!,
-        departureAt!!,
-        arrivalAt!!,
-        departureStationId!!,
-        arrivalStationId!!,
-        distance!!,
-        duration!!
-    )
-
     fun saveInBatchIgnoringConflicts(journeys: List<JourneyNew>) {
         val records = journeys.map { it.toRecord() }
 
-        val insertFields = JOURNEY.fields().filter { it != JOURNEY.ID }
-        val offsetInsertFields = listOf(null) + insertFields // offset id argument position to use fields insert
         ctx.loadInto(JOURNEY)
             .onDuplicateKeyIgnore()
             .batchAll()
             .loadRecords(records)
-            .fields(offsetInsertFields)
+            .fields(nullOffsetWithoutIdFields)
             .execute()
+    }
+
+    fun listJourneys(
+        orderBy: String,
+        descending: Boolean,
+        pageSize: Int,
+        keyset: PaginationKeyset<Any, Long>?
+    ): List<JourneyEntity> {
+        val orderFields = if (descending) {
+            listOf(getJourneyField(orderBy).desc(), JOURNEY.ID.desc())
+        } else {
+            listOf(getJourneyField(orderBy).asc(), JOURNEY.ID.asc())
+        }
+
+        return ctx.selectFrom(JOURNEY)
+            .orderBy(orderFields)
+            .apply { if (keyset != null) seek(keyset.value, keyset.id) }
+            .limit(pageSize)
+            .fetch {
+                it.toEntity()
+            }
+    }
+
+    private fun getJourneyField(field: String) = with(JOURNEY) {
+        when (field) {
+            "id" -> ID
+            "departureAt" -> DEPARTURE_AT
+            "arrivalAt" -> ARRIVAL_AT
+            "departureStationId" -> DEPARTURE_STATION_ID
+            "arrivalStationId" -> ARRIVAL_STATION_ID
+            "distance" -> DISTANCE
+            "duration" -> DURATION
+            else -> throw InvalidParameterException("unknown journey field")
+        }
     }
 
     fun getJourneyStatisticsByStationId(stationId: Int, from: Instant? = null, to: Instant? = null): JourneyStatistics {
@@ -111,9 +151,29 @@ class JourneyRepository(private val ctx: DSLContext) {
         null,
         departureAt,
         arrivalAt,
-        departureStation,
-        arrivalStation,
+        departureStationId,
+        arrivalStationId,
         distance,
         duration
+    )
+
+    private fun JourneyEntity.toRecord() = JourneyRecord(
+        id,
+        departureAt,
+        arrivalAt,
+        departureStationId,
+        arrivalStationId,
+        distance,
+        duration
+    )
+
+    private fun JourneyRecord.toEntity() = JourneyEntity(
+        id!!,
+        departureAt!!,
+        arrivalAt!!,
+        departureStationId!!,
+        arrivalStationId!!,
+        distance!!,
+        duration!!
     )
 }

@@ -90,8 +90,8 @@ class DataLoader : Runnable {
     private fun isJourneyValid(journey: JourneyNew) =
         journey.distance >= config.minimumJourneyDistance &&
             journey.duration >= config.minimumJourneyDuration &&
-            journey.departureStation in validStationIds &&
-            journey.arrivalStation in validStationIds
+            journey.departureStationId in validStationIds &&
+            journey.arrivalStationId in validStationIds
 
     private fun parseStation(entry: Map<String, String>) = parseIgnoringMalformedData {
         StationNew(
@@ -114,8 +114,8 @@ class DataLoader : Runnable {
         JourneyNew(
             departureAt = LocalDateTime.parse(entry["Departure"]!!).atZone(TIMEZONE).toInstant(),
             arrivalAt = LocalDateTime.parse(entry["Return"]!!).atZone(TIMEZONE).toInstant(),
-            departureStation = entry["Departure station id"]!!.toInt(),
-            arrivalStation = entry["Return station id"]!!.toInt(),
+            departureStationId = entry["Departure station id"]!!.toInt(),
+            arrivalStationId = entry["Return station id"]!!.toInt(),
             distance = entry["Covered distance (m)"]!!.toDouble().toInt(),
             duration = entry["Duration (sec.)"]!!.toDouble().toInt()
         )

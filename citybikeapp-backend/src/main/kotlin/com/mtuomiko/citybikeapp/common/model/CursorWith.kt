@@ -1,6 +1,6 @@
 package com.mtuomiko.citybikeapp.common.model
 
-class TotalPagesWith<T>(
+class CursorWith<T>(
     val content: T,
-    val totalPages: Int
+    val cursor: String?
 )
