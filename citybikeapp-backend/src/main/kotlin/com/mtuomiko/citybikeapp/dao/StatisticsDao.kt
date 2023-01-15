@@ -1,6 +1,7 @@
 package com.mtuomiko.citybikeapp.dao
 
 import com.mtuomiko.citybikeapp.common.model.TopStation
+import com.mtuomiko.citybikeapp.dao.model.JourneyStatistics
 import com.mtuomiko.citybikeapp.dao.model.TopStations
 import com.mtuomiko.citybikeapp.dao.repository.JourneyRepository
 import jakarta.inject.Inject
@@ -11,8 +12,9 @@ import java.time.Instant
 class StatisticsDao(
     @Inject private val journeyRepository: JourneyRepository
 ) {
-    fun getJourneyStatisticsByStationId(stationId: Int, from: Instant?, to: Instant?) =
-        journeyRepository.getJourneyStatisticsByStationId(stationId, from, to)
+    fun getJourneyStatisticsByStationId(stationId: Int, from: Instant?, to: Instant?): JourneyStatistics {
+        return journeyRepository.getJourneyStatisticsByStationId(stationId, from, to)
+    }
 
     fun getTopStationsByStationId(stationId: Int, from: Instant?, to: Instant?): TopStations {
         val topStationsQueryResult = journeyRepository.getTopStationsByStationId(stationId, from, to)

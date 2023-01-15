@@ -53,6 +53,7 @@ dependencies {
         exclude(group = "org.slf4j", module = "slf4j-nop") // for some reason openapi tries to include this
     }
     implementation("org.mapstruct:mapstruct:1.5.3.Final")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core") // match supported kotlin version
 
     compileOnly("jakarta.persistence:jakarta.persistence-api:3.1.0")
     compileOnly("com.google.code.findbugs:jsr305") // "unknown enum constant When.MAYBE" warning on kaptKotlin task

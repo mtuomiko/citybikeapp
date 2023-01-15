@@ -8,8 +8,13 @@ import com.mtuomiko.citybikeapp.dao.StatisticsDao
 import com.mtuomiko.citybikeapp.svc.model.StationStatistics
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import java.time.LocalDate
 import java.time.LocalTime
+
+private val logger = KotlinLogging.logger {}
 
 @Singleton
 class StationService(
@@ -30,17 +35,21 @@ class StationService(
         val from = fromDate?.atStartOfDay(TIMEZONE)?.toInstant()
         val to = toDate?.atTime(LocalTime.MAX)?.atZone(TIMEZONE)?.toInstant()
 
-        // TODO: Async handling of queries?
-        val journeyStatistics = statisticsDao.getJourneyStatisticsByStationId(stationId, from, to)
-        val topStations = statisticsDao.getTopStationsByStationId(stationId, from, to)
+        return runBlocking {
+            val deferredStatistics = async { statisticsDao.getJourneyStatisticsByStationId(stationId, from, to) }
+            val deferredTopStations = async { statisticsDao.getTopStationsByStationId(stationId, from, to) }
 
-        return StationStatistics(
-            departureCount = journeyStatistics.departureCount,
-            arrivalCount = journeyStatistics.arrivalCount,
-            departureAverageDistance = journeyStatistics.departureAverageDistance,
-            arrivalAverageDistance = journeyStatistics.arrivalAverageDistance,
-            topStationsForArrivingHere = topStations.forArrivingHere,
-            topStationsForDepartingTo = topStations.forDepartingTo
-        )
+            val journeyStatistics = deferredStatistics.await()
+            val topStations = deferredTopStations.await()
+
+            StationStatistics(
+                departureCount = journeyStatistics.departureCount,
+                arrivalCount = journeyStatistics.arrivalCount,
+                departureAverageDistance = journeyStatistics.departureAverageDistance,
+                arrivalAverageDistance = journeyStatistics.arrivalAverageDistance,
+                topStationsForArrivingHere = topStations.forArrivingHere,
+                topStationsForDepartingTo = topStations.forDepartingTo
+            )
+        }
     }
 }
