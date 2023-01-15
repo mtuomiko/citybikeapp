@@ -8,6 +8,8 @@ import com.mtuomiko.citybikeapp.dao.model.TopStationsQueryResult
 import com.mtuomiko.citybikeapp.jooq.tables.Journey.Companion.JOURNEY
 import com.mtuomiko.citybikeapp.jooq.tables.records.JourneyRecord
 import jakarta.inject.Singleton
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.future.asDeferred
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Record3
@@ -84,7 +86,11 @@ class JourneyRepository(private val ctx: DSLContext) {
         }
     }
 
-    fun getJourneyStatisticsByStationId(stationId: Int, from: Instant? = null, to: Instant? = null): JourneyStatistics {
+    fun getJourneyStatisticsByStationId(
+        stationId: Int,
+        from: Instant? = null,
+        to: Instant? = null
+    ): Deferred<JourneyStatistics> {
         return with(JOURNEY) {
             val condition = DEPARTURE_STATION_ID.eq(stationId).or(ARRIVAL_STATION_ID.eq(stationId))
                 .andDepartureTimestampCondition(from, to)
@@ -96,15 +102,18 @@ class JourneyRepository(private val ctx: DSLContext) {
                 avg(DISTANCE).filterWhere(ARRIVAL_STATION_ID.eq(stationId))
             ).from(JOURNEY)
                 .where(condition)
-                .fetchSingle()
-                .let {
-                    JourneyStatistics(
-                        departureCount = it.component1().toLong(),
-                        arrivalCount = it.component2().toLong(),
-                        departureAverageDistance = (it.component3() ?: 0).toDouble(), // avg can have null results
-                        arrivalAverageDistance = (it.component4() ?: 0).toDouble()
-                    )
+                .fetchAsync()
+                .thenApply { result ->
+                    result.first().let {
+                        JourneyStatistics(
+                            departureCount = it.component1().toLong(),
+                            arrivalCount = it.component2().toLong(),
+                            departureAverageDistance = (it.component3() ?: 0).toDouble(), // avg can have null results
+                            arrivalAverageDistance = (it.component4() ?: 0).toDouble()
+                        )
+                    }
                 }
+                .asDeferred()
         }
     }
 
@@ -113,7 +122,7 @@ class JourneyRepository(private val ctx: DSLContext) {
         from: Instant? = null,
         to: Instant? = null,
         limitPerDirection: Int = 5
-    ): List<TopStationsQueryResult> {
+    ): Deferred<List<TopStationsQueryResult>> {
         val departureStationsCondition =
             JOURNEY.ARRIVAL_STATION_ID.eq(stationId).andDepartureTimestampCondition(from, to)
         val arrivalStationsCondition =
@@ -121,9 +130,11 @@ class JourneyRepository(private val ctx: DSLContext) {
 
         return createJourneyStatisticSelect(departureStationsCondition, limitPerDirection)
             .union(createJourneyStatisticSelect(arrivalStationsCondition, limitPerDirection))
-            .fetch().map {
-                TopStationsQueryResult(it.component1()!!, it.component2()!!, it.component3()!!.toLong())
+            .fetchAsync()
+            .thenApply { result ->
+                result.map { TopStationsQueryResult(it.component1()!!, it.component2()!!, it.component3()!!.toLong()) }
             }
+            .asDeferred()
     }
 
     private fun createJourneyStatisticSelect(

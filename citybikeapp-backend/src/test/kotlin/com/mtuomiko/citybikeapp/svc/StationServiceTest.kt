@@ -3,7 +3,7 @@ package com.mtuomiko.citybikeapp.svc
 import com.mtuomiko.citybikeapp.common.TIMEZONE
 import com.mtuomiko.citybikeapp.dao.StationDao
 import com.mtuomiko.citybikeapp.dao.StatisticsDao
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -27,14 +27,14 @@ class StationServiceTest {
         val intCaptor = mutableListOf<Int>()
         val instantCaptor = mutableListOf<Instant>()
 
-        every {
+        coEvery {
             statisticsDao.getJourneyStatisticsByStationId(
                 capture(intCaptor),
                 capture(instantCaptor),
                 capture(instantCaptor)
             )
         } returns mockk(relaxed = true)
-        every {
+        coEvery {
             statisticsDao.getTopStationsByStationId(
                 capture(intCaptor),
                 capture(instantCaptor),
