@@ -4,7 +4,7 @@ logger:
 #      mtuomiko:
 #        citybikeapp: DEBUG
 #    io:
-#      micronaut:
+#      micronaut: DEBUG
 #        data: DEBUG
 #    org:
 #      jdbi: DEBUG

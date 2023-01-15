@@ -10,7 +10,6 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.time.LocalDate
 import java.time.LocalTime
-import kotlin.math.min
 
 @Singleton
 class StationService(
@@ -23,7 +22,7 @@ class StationService(
     fun getAllStationsLimited() = stationDao.getAllStationsLimited()
 
     fun getStations(searchTokens: List<String>, page: Int?, pageSize: Int?): TotalPagesWith<List<Station>> {
-        return stationDao.getStations(searchTokens, page ?: 0, getPageSizeUsingConfig(pageSize, paginationConfig))
+        return stationDao.getStations(searchTokens, page ?: 0, paginationConfig.getMaxLimitedPageSize(pageSize))
     }
 
     fun getStationStatistics(stationId: Int, fromDate: LocalDate?, toDate: LocalDate?): StationStatistics {
@@ -43,11 +42,5 @@ class StationService(
             topStationsForArrivingHere = topStations.forArrivingHere,
             topStationsForDepartingTo = topStations.forDepartingTo
         )
-    }
-
-    private fun getPageSizeUsingConfig(size: Int?, config: PaginationConfig) = if (size == null) {
-        config.defaultPageSize
-    } else {
-        min(size, config.maxPageSize)
     }
 }

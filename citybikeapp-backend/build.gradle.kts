@@ -156,6 +156,18 @@ tasks.jacocoTestCoverageVerification {
     }
 }
 
+tasks.jacocoTestReport {
+    classDirectories.setFrom(
+        files(
+            classDirectories.files.map {
+                fileTree(it) {
+                    exclude("**/com/mtuomiko/citybikeapp/jooq/**")
+                }
+            }
+        )
+    )
+}
+
 jooq {
     version.set("3.17.6")
 

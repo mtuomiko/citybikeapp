@@ -6,6 +6,7 @@ micronaut:
   application:
     name: citybikeapp
   serde:
+    writeDatesAsTimestamps: false
     serialization:
       inclusion: NON_ABSENT
   openapi:

@@ -18,3 +18,9 @@ class StationsResponse(
     val stations: List<APIStation>,
     val meta: Meta
 )
+
+@Serdeable
+class JourneysResponse(
+    val journeys: List<APIJourney>,
+    val meta: CursorMeta
+)
