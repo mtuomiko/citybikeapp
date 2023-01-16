@@ -23,7 +23,7 @@ jobs:
           # Documentation branch expects API file to reside at root.
           mv -f citybikeapp-backend/gen/api.yml .
           # add both paths so the gen path file doesn't remain in git
-          git add api.yml gen/api.yml
+          git add api.yml citybikeapp-backend/gen/api.yml
       - name: Check for changes
         id: diff
         run: |
