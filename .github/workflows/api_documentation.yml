@@ -16,8 +16,8 @@ jobs:
       - name: Get the file from triggering commit and stage
         run: |
           # get documentation branch
-          git fetch origin documentation:documentation
-          git switch documentation
+          git fetch origin api_documentation:api_documentation
+          git switch api_documentation
           # get the updated file based on current triggering commit hash, could probably use branch also
           git checkout ${{ github.sha }} citybikeapp-backend/gen/api.yml
           # Documentation branch expects API file to reside at root.
@@ -44,4 +44,4 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: documentation
+          branch: api_documentation
