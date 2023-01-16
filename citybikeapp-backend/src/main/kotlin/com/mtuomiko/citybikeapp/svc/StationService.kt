@@ -13,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import java.time.LocalDate
 import java.time.LocalTime
-import kotlin.time.ExperimentalTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -31,7 +30,6 @@ class StationService(
         return stationDao.getStations(searchTokens, page ?: 0, paginationConfig.getMaxLimitedPageSize(pageSize))
     }
 
-    @OptIn(ExperimentalTime::class)
     fun getStationStatistics(stationId: Int, fromDate: LocalDate?, toDate: LocalDate?): StationStatistics {
         // Interpret query dates to be in local Helsinki time
         val from = fromDate?.atStartOfDay(TIMEZONE)?.toInstant()

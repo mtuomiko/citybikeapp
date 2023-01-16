@@ -1,0 +1,47 @@
+name: Swagger UI documentation pipeline
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/api_documentation.yml'
+      - 'citybikeapp-backend/gen/api.yml'
+
+jobs:
+  push_specs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get the file from triggering commit and stage
+        run: |
+          # get documentation branch
+          git fetch origin documentation:documentation
+          git switch documentation
+          # get the updated file based on current triggering commit hash, could probably use branch also
+          git checkout ${{ github.sha }} citybikeapp-backend/gen/api.yml
+          # Documentation branch expects API file to reside at root.
+          mv -f citybikeapp-backend/gen/api.yml .
+          # add both paths so the gen path file doesn't remain in git
+          git add api.yml gen/api.yml
+      - name: Check for changes
+        id: diff
+        run: |
+          changed_file_count=$(git status --porcelain=v1 2>/dev/null | wc -l)
+          if (( changed_file_count > 0 )); then
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Commit
+        if: steps.diff.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -m "Update API specs file"
+      - name: Push changes
+        if: steps.diff.outputs.has_changes == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: documentation
