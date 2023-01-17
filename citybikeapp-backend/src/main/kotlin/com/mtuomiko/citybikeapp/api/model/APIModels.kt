@@ -7,7 +7,7 @@ import java.time.ZonedDateTime
 @Serdeable
 @Schema(name = "StationDetails")
 data class APIStationDetails(
-    val id: Int,
+    val id: String,
     val nameFinnish: String,
     val nameSwedish: String,
     val nameEnglish: String,
@@ -24,7 +24,7 @@ data class APIStationDetails(
 @Serdeable
 @Schema(name = "Station")
 data class APIStation(
-    val id: Int,
+    val id: String,
     val nameFinnish: String,
     val addressFinnish: String,
     val cityFinnish: String,
@@ -35,7 +35,7 @@ data class APIStation(
 @Serdeable
 @Schema(name = "StationLimited")
 data class APIStationLimited(
-    val id: Int,
+    val id: String,
     val nameFinnish: String
 )
 
@@ -53,7 +53,7 @@ data class APIStationStatistics(
 @Serdeable
 @Schema(name = "TopStation")
 class APITopStation(
-    val id: Int,
+    val id: String,
     val journeyCount: Long
 )
 
@@ -70,7 +70,7 @@ class CursorMeta(
 @Serdeable
 @Schema(name = "Journey")
 data class APIJourney(
-    val id: Long,
+    val id: String,
     val departureTime: ZonedDateTime,
     val arrivalTime: ZonedDateTime,
     val departureStationId: Int,

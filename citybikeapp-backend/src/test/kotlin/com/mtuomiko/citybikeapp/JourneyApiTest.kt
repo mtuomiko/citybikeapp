@@ -205,7 +205,7 @@ class JourneyApiTest {
     }
 
     private fun JourneyEntity.toApi() = APIJourney(
-        id,
+        id.toString(),
         ZonedDateTime.ofInstant(departureAt, TIMEZONE),
         ZonedDateTime.ofInstant(arrivalAt, TIMEZONE),
         departureStationId,

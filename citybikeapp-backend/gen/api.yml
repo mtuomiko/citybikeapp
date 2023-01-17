@@ -230,8 +230,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int64
+          type: string
         departureTime:
           type: string
           format: date-time
@@ -283,8 +282,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int32
+          type: string
         nameFinnish:
           type: string
         addressFinnish:
@@ -313,8 +311,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int32
+          type: string
         nameFinnish:
           type: string
         nameSwedish:
@@ -357,8 +354,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int32
+          type: string
         nameFinnish:
           type: string
     StationStatistics:
@@ -419,8 +415,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
-          format: int32
+          type: string
         journeyCount:
           type: integer
           format: int64

@@ -65,7 +65,7 @@ class StationApiTest {
         val request = HttpRequest.GET<Any>("/limited")
         val response = client.exchange(request, StationsLimitedResponse::class.java)
 
-        val expected = stationRepository.findAll().map { APIStationLimited(it.id, it.nameFinnish) }
+        val expected = stationRepository.findAll().map { APIStationLimited(it.id.toString(), it.nameFinnish) }
         assertThat(response.status).isEqualTo(HttpStatus.OK)
         assertThat(response.body()!!.stations).hasSize(testStations.size)
         assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
@@ -79,7 +79,7 @@ class StationApiTest {
 
         val expectedStationsDetails = with(testStation) {
             APIStationDetails(
-                id,
+                id.toString(),
                 nameFinnish,
                 nameSwedish,
                 nameEnglish,
@@ -109,7 +109,7 @@ class StationApiTest {
         val expected = testStations
             .sortedBy { it.id }
             .take(paginationConfig.defaultPageSize)
-            .map { with(it) { APIStation(id, nameFinnish, addressFinnish, cityFinnish, operator, capacity) } }
+            .map { it.toApi() }
 
         assertThat(response.status).isEqualTo(HttpStatus.OK)
         assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
@@ -125,7 +125,7 @@ class StationApiTest {
             .filter { it.nameFinnish.contains("toinen", ignoreCase = true) }
             .sortedBy { it.id }
             .take(paginationConfig.defaultPageSize)
-            .map { with(it) { APIStation(id, nameFinnish, addressFinnish, cityFinnish, operator, capacity) } }
+            .map { it.toApi() }
 
         assertThat(response.status).isEqualTo(HttpStatus.OK)
         assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
@@ -141,7 +141,7 @@ class StationApiTest {
             .sortedBy { it.id }
             .drop(paginationConfig.defaultPageSize)
             .take(paginationConfig.defaultPageSize)
-            .map { with(it) { APIStation(id, nameFinnish, addressFinnish, cityFinnish, operator, capacity) } }
+            .map { it.toApi() }
 
         assertThat(response.status).isEqualTo(HttpStatus.OK)
         assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
@@ -158,7 +158,7 @@ class StationApiTest {
             .sortedBy { it.id }
             .drop(paginationConfig.defaultPageSize)
             .take(paginationConfig.defaultPageSize)
-            .map { with(it) { APIStation(id, nameFinnish, addressFinnish, cityFinnish, operator, capacity) } }
+            .map { it.toApi() }
 
         assertThat(response.status).isEqualTo(HttpStatus.OK)
         assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
@@ -175,7 +175,7 @@ class StationApiTest {
             .filter { it.nameFinnish.contains("toinen", ignoreCase = true) }
             .sortedBy { it.id }
             .take(pageSize)
-            .map { with(it) { APIStation(id, nameFinnish, addressFinnish, cityFinnish, operator, capacity) } }
+            .map { it.toApi() }
 
         assertThat(response.status).isEqualTo(HttpStatus.OK)
         assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
@@ -194,10 +194,13 @@ class StationApiTest {
             .sortedBy { it.id }
             .drop(page * pageSize)
             .take(pageSize)
-            .map { with(it) { APIStation(id, nameFinnish, addressFinnish, cityFinnish, operator, capacity) } }
+            .map { it.toApi() }
 
         assertThat(response.status).isEqualTo(HttpStatus.OK)
         assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
         assertThat(response.body()!!.meta.totalPages).isEqualTo(4)
     }
+
+    private fun StationEntity.toApi() =
+        APIStation(id.toString(), nameFinnish, addressFinnish, cityFinnish, operator, capacity)
 }
