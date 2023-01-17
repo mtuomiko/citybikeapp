@@ -1,9 +1,12 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { ChakraProvider } from "@chakra-ui/react";
 import App from "App";
 import StationDetailsView from "components/StationDetailsView";
 import StationList from "components/StationList";
+import JourneyList from "components/JourneyList";
+import { StationsLimitedProvider } from "contexts/StationsLimitedContext";
 
 const router = createBrowserRouter([
   {
@@ -17,6 +20,10 @@ const router = createBrowserRouter([
       {
         path: "stations/:stationId",
         element: <StationDetailsView />
+      },
+      {
+        path: "journeys",
+        element: <JourneyList />
       }
     ]
   },
@@ -25,6 +32,10 @@ const router = createBrowserRouter([
 const root = createRoot(document.getElementById("root") as HTMLElement);
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <ChakraProvider>
+      <StationsLimitedProvider>
+        <RouterProvider router={router} />
+      </StationsLimitedProvider>
+    </ChakraProvider>
   </React.StrictMode>
 );

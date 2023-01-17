@@ -1,28 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { StationsLimitedResponse } from "generated";
-import { stationApi } from "clients";
+import { useStationsLimited } from "contexts/StationsLimitedContext";
 
 const StationList = () => {
-  const [response, setResponse] = useState<StationsLimitedResponse | undefined>(undefined);
-  useEffect(() => {
-    const getStation = async () => {
-      const response = await stationApi.getAllStationsLimited();
-      setResponse(response.data);
-    };
-
-    void getStation();
-  }, []);
-
-  if (response === undefined) return null;
+  const { state } = useStationsLimited();
 
   return (
     <div>
       <ul>
-        {response.stations.map(stationLimited =>
-          <div key={stationLimited.id}>
-            <span><Link to={`/stations/${stationLimited.id}`}>{stationLimited.nameFinnish}</Link></span>
-          </div>)}
+        {state.stations.allIds.map(stationId => {
+          const station = state.stations.byId[stationId];
+          return <div key={stationId}>
+            <span><Link to={`/stations/${station.id}`}>{station.nameFinnish}</Link></span>
+          </div>;
+        })}
       </ul>
     </div>
   );

@@ -68,7 +68,7 @@ class JourneyController(
 
     private fun Journey.toApi() =
         APIJourney(
-            id,
+            id.toString(),
             ZonedDateTime.ofInstant(departureAt, TIMEZONE),
             ZonedDateTime.ofInstant(arrivalAt, TIMEZONE),
             departureStationId,
