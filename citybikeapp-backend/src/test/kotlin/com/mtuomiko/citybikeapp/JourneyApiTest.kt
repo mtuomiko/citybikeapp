@@ -2,7 +2,6 @@ package com.mtuomiko.citybikeapp
 
 import com.mtuomiko.citybikeapp.api.model.APIJourney
 import com.mtuomiko.citybikeapp.api.model.JourneysResponse
-import com.mtuomiko.citybikeapp.common.TIMEZONE
 import com.mtuomiko.citybikeapp.dao.builder.JourneyEntityBuilder
 import com.mtuomiko.citybikeapp.dao.builder.StationEntityBuilder
 import com.mtuomiko.citybikeapp.dao.entity.JourneyEntity
@@ -24,7 +23,6 @@ import org.junit.jupiter.api.Test
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.Instant
-import java.time.ZonedDateTime
 
 @MicronautTest
 class JourneyApiTest {
@@ -206,8 +204,8 @@ class JourneyApiTest {
 
     private fun JourneyEntity.toApi() = APIJourney(
         id.toString(),
-        ZonedDateTime.ofInstant(departureAt, TIMEZONE),
-        ZonedDateTime.ofInstant(arrivalAt, TIMEZONE),
+        departureAt,
+        arrivalAt,
         departureStationId,
         arrivalStationId,
         distance,
