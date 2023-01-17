@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: City Bike App API
-  version: 0.0.8a
+  version: 0.0.9a
 paths:
   /health:
     get:
@@ -49,6 +49,8 @@ paths:
           enum:
           - departureAt
           - arrivalAt
+          - distance
+          - duration
       - name: direction
         in: query
         description: Sort results in this direction
@@ -220,10 +222,10 @@ components:
           nullable: true
     Journey:
       required:
+      - arrivalAt
       - arrivalStationId
-      - arrivalTime
+      - departureAt
       - departureStationId
-      - departureTime
       - distance
       - duration
       - id
@@ -231,10 +233,10 @@ components:
       properties:
         id:
           type: string
-        departureTime:
+        departureAt:
           type: string
           format: date-time
-        arrivalTime:
+        arrivalAt:
           type: string
           format: date-time
         departureStationId:
