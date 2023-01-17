@@ -2,7 +2,7 @@ package com.mtuomiko.citybikeapp.api.model
 
 import io.micronaut.serde.annotation.Serdeable
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.ZonedDateTime
+import java.time.Instant
 
 @Serdeable
 @Schema(name = "StationDetails")
@@ -71,8 +71,8 @@ class CursorMeta(
 @Schema(name = "Journey")
 data class APIJourney(
     val id: String,
-    val departureTime: ZonedDateTime,
-    val arrivalTime: ZonedDateTime,
+    val departureAt: Instant,
+    val arrivalAt: Instant,
     val departureStationId: Int,
     val arrivalStationId: Int,
     val distance: Int,

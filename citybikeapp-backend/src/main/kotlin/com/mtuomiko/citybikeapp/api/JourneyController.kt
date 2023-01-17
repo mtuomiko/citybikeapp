@@ -3,7 +3,6 @@ package com.mtuomiko.citybikeapp.api
 import com.mtuomiko.citybikeapp.api.model.APIJourney
 import com.mtuomiko.citybikeapp.api.model.CursorMeta
 import com.mtuomiko.citybikeapp.api.model.JourneysResponse
-import com.mtuomiko.citybikeapp.common.TIMEZONE
 import com.mtuomiko.citybikeapp.common.model.Journey
 import com.mtuomiko.citybikeapp.svc.JourneyService
 import io.micronaut.http.annotation.Controller
@@ -15,7 +14,6 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
-import java.time.ZonedDateTime
 
 @ExecuteOn(TaskExecutors.IO)
 @Controller("/journey")
@@ -32,7 +30,7 @@ class JourneyController(
                 description = "Sort results by this property",
                 schema = Schema(
                     type = "string",
-                    allowableValues = ["departureAt", "arrivalAt"],
+                    allowableValues = ["departureAt", "arrivalAt", "distance", "duration"],
                     defaultValue = "departureAt"
                 )
             ),
@@ -69,8 +67,8 @@ class JourneyController(
     private fun Journey.toApi() =
         APIJourney(
             id.toString(),
-            ZonedDateTime.ofInstant(departureAt, TIMEZONE),
-            ZonedDateTime.ofInstant(arrivalAt, TIMEZONE),
+            departureAt,
+            arrivalAt,
             departureStationId,
             arrivalStationId,
             distance,

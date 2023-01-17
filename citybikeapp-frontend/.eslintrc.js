@@ -60,6 +60,14 @@ module.exports = {
         ]
       }
     ],
+    "@typescript-eslint/no-misused-promises": [
+      "error",
+      {
+        "checksVoidReturn": {
+          "attributes": false
+        }
+      }
+    ],
     "import/order": [
       "error",
       {

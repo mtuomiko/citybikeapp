@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link as ReactRouterLink, useParams } from "react-router-dom";
+import { Link } from "@chakra-ui/react";
 import { StationStatistics, StationDetailsWithStatisticsResponse, TopStation, StationDetails } from "generated";
 import { stationApi } from "clients";
+import { useStationsLimited } from "contexts/StationsLimitedContext";
 
 const StationDetailsView = () => {
   const params = useParams();
+  const { state } = useStationsLimited();
   const stationId = Number(params.stationId);
   const [response, setResponse] = useState<StationDetailsWithStatisticsResponse | undefined>(undefined);
   useEffect(() => {
@@ -18,7 +21,7 @@ const StationDetailsView = () => {
     void getStation();
   }, [stationId]);
 
-  if (response === undefined) return null;
+  if (response === undefined || state.stations.allIds.length === 0) return null;
 
   const statistics = (statistics: StationStatistics) => (
     <>
@@ -39,7 +42,12 @@ const StationDetailsView = () => {
       <h3>{name}</h3>
       {stations.map(station =>
         <div key={station.id}>
-          <span><Link to={`/stations/${station.id}`}>{station.id}</Link>, {station.journeyCount} journeys</span>
+          <span>
+            <Link
+              as={ReactRouterLink}
+              to={`/stations/${station.id}`}
+            >{state.stations.byId[station.id].nameFinnish}</Link>, {station.journeyCount} journeys
+          </span>
         </div>
       )}
     </div >
