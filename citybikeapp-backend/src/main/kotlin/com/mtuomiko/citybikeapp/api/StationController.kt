@@ -5,18 +5,16 @@ import com.mtuomiko.citybikeapp.api.model.Meta
 import com.mtuomiko.citybikeapp.api.model.StationDetailsWithStatisticsResponse
 import com.mtuomiko.citybikeapp.api.model.StationsLimitedResponse
 import com.mtuomiko.citybikeapp.api.model.StationsResponse
+import com.mtuomiko.citybikeapp.common.BadRequestError
+import com.mtuomiko.citybikeapp.common.ErrorMessages.INVALID_QUERY_PARAMETER
+import com.mtuomiko.citybikeapp.common.InnerError
+import com.mtuomiko.citybikeapp.common.NotFoundError
 import com.mtuomiko.citybikeapp.svc.StationService
 import io.micronaut.core.annotation.Nullable
-import io.micronaut.http.HttpRequest
-import io.micronaut.http.HttpResponse
-import io.micronaut.http.HttpStatus
 import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Error
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.PathVariable
 import io.micronaut.http.annotation.QueryValue
-import io.micronaut.http.hateoas.JsonError
-import io.micronaut.http.hateoas.Link
 import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.scheduling.annotation.ExecuteOn
 import io.swagger.v3.oas.annotations.Operation
@@ -76,10 +74,10 @@ class StationController(
 
         val searchTokens = search?.split('+') ?: emptyList()
         if (searchTokens.size > MAX_SEARCH_TERM_COUNT || searchTokens.any { it.length < MIN_SEARCH_TERM_LENGTH }) {
-            throw BadRequestException("check search terms")
+            throw BadRequestError("check search terms")
         }
-        if (page != null && page < 0) throw BadRequestException("page cannot be negative")
-        if (pageSize != null && pageSize < 0) throw BadRequestException("pageSize cannot be negative")
+        if (page != null && page < 0) throw BadRequestError("page cannot be negative")
+        if (pageSize != null && pageSize < 0) throw BadRequestError("pageSize cannot be negative")
 
         val stations = stationService.getStations(searchTokens, page, pageSize)
 
@@ -107,10 +105,8 @@ class StationController(
         @Parameter(example = "2021-07-02") @QueryValue @Nullable
         toDate: LocalDate?
     ): StationDetailsWithStatisticsResponse {
-        if (fromDate != null && toDate != null && fromDate > toDate) {
-            throw BadRequestException("query parameter `fromDate` date cannot be after `toDate` date")
-        }
-        val station = stationService.getStationById(id) ?: throw NotFoundException("Station not found")
+        validateDates(fromDate, toDate)
+        val station = stationService.getStationById(id) ?: throw NotFoundError("Station not found")
 
         val stationStatistics = stationService.getStationStatistics(id, fromDate, toDate)
 
@@ -120,22 +116,17 @@ class StationController(
         )
     }
 
-    @Error
-    fun notFound(request: HttpRequest<*>, e: NotFoundException): HttpResponse<JsonError> {
-        val error = JsonError(e.message).link(Link.SELF, Link.of(request.uri))
-
-        return HttpResponse.status<JsonError>(HttpStatus.NOT_FOUND).body(error)
+    private fun validateDates(fromDate: LocalDate?, toDate: LocalDate?) {
+        if (fromDate != null && toDate != null && fromDate > toDate) {
+            throw BadRequestError(
+                "query parameter `fromDate` date cannot be after `toDate` date",
+                innerErrors = listOf(
+                    InnerError(INVALID_QUERY_PARAMETER, "fromDate"),
+                    InnerError(INVALID_QUERY_PARAMETER, "toDate")
+                )
+            )
+        }
     }
-
-    @Error
-    fun badRequest(request: HttpRequest<*>, e: BadRequestException): HttpResponse<JsonError> {
-        val error = JsonError(e.message).link(Link.SELF, Link.of(request.uri))
-
-        return HttpResponse.status<JsonError>(HttpStatus.BAD_REQUEST).body(error)
-    }
-
-    class NotFoundException(message: String = "Not found", cause: Throwable? = null) : Throwable(message, cause)
-    class BadRequestException(message: String = "Bad request", cause: Throwable? = null) : Throwable(message, cause)
 }
 
 const val MAX_SEARCH_TERM_COUNT = 3

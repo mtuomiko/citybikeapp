@@ -24,3 +24,10 @@ class JourneysResponse(
     val journeys: List<APIJourney>,
     val meta: CursorMeta
 )
+
+@Serdeable
+class ErrorResponse(
+    val message: String?,
+    val status: Int,
+    val errors: List<APIError>?
+)

@@ -78,3 +78,10 @@ data class APIJourney(
     val distance: Int,
     val duration: Int
 )
+
+@Serdeable
+@Schema(name = "Error")
+class APIError(
+    val message: String,
+    val target: String?
+)
