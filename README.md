@@ -1,4 +1,24 @@
-# Helsinki city bike app (Dev Academy pre-assignment)
+# City Bike App
+
+This is a monorepository for implementing the [pre-assignment for Solita Dev Academy Finland 2023](https://github.com/solita/dev-academy-2023-exercise).
+
+## Quick start
+
+This quick start requires Java JDK 17, a Docker host, Docker Compose and local port `8080` to be available on the host 
+machine.
+
+1. Build backend and generate its Dockerfile. Select Gradle wrapper depending on the host OS: `gradlew.bat` file for 
+   Windows, otherwise `gradlew` file.
+    * Run `./citybikeapp-backend/gradlew -p ./citybikeapp-backend buildLayers dockerfile` at project root
+1. Run the local docker-compose setup.
+    * Run `docker compose -f docker-compose.local.yml --profile dataloader up` at project root
+    * Wait for the station and journey data loading to complete, or don't, the application should be available before 
+      the loading completes.
+1. City Bike App is found at [http://localhost:8080](http://localhost:8080)
+
+You can pull down the compose setup with `docker-compose -f docker-compose.local.yml down`
+
+## Description
 
 This is the pre-assignment for Solita Dev Academy Finland 2023. But if you’re here just purely out of curiosity, feel free to snatch the idea and make your own city bike app just for the fun of it!
 
@@ -50,16 +70,16 @@ Focus on the recommended features. For extra points, you might want to also comp
 
 #### Recommended
 
-* Import data from the CSV files to a database or in-memory storage
-* Validate data before importing
-* Don't import journeys that lasted for less than ten seconds
-* Don't import journeys that covered distances shorter than 10 meters
+* Import data from the CSV files to a database or in-memory storage ✅
+* Validate data before importing ✅
+* Don't import journeys that lasted for less than ten seconds ✅
+* Don't import journeys that covered distances shorter than 10 meters ✅
 
 ### Journey list view
 
 #### Recommended
 
-* List journeys
+* List journeys ✅
     * If you don't implement pagination, use some hard-coded limit for the list length because showing several million rows would make any browser choke
 * For each journey show departure and return stations, covered distance in kilometers and duration in minutes
 
@@ -74,7 +94,7 @@ Focus on the recommended features. For extra points, you might want to also comp
 
 #### Recommended
 
-* List all the stations
+* List all the stations ✅
 
 #### Additional
 
@@ -85,17 +105,17 @@ Focus on the recommended features. For extra points, you might want to also comp
 
 #### Recommended
 
-* Station name
-* Station address
-* Total number of journeys starting from the station
-* Total number of journeys ending at the station
+* Station name ✅
+* Station address ✅
+* Total number of journeys starting from the station ✅
+* Total number of journeys ending at the station ✅
 
 #### Additional
 * Station location on the map
-* The average distance of a journey starting from the station
-* The average distance of a journey ending at the station
-* Top 5 most popular return stations for journeys starting from the station
-* Top 5 most popular departure stations for journeys ending at the station
+* The average distance of a journey starting from the station ✅
+* The average distance of a journey ending at the station ✅
+* Top 5 most popular return stations for journeys starting from the station ✅
+* Top 5 most popular departure stations for journeys ending at the station ✅
 * Ability to filter all the calculations per month
 
 ## Surprise us with

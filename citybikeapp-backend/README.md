@@ -1,5 +1,20 @@
 # City Bike App backend
 
+## Requirements
+
+* Java JDK 17
+
+## Used technologies
+
+* Framework: Micronaut
+* Build/tooling: Gradle
+* Language: Kotlin
+* Database: PostgreSQL
+* DB access: jOOQ
+* Migrations: Flyway
+* Code quality / static analysis: detekt, Spotless
+* Test coverage: JaCoCo
+
 ## Data
 
 Application can be used to automatically fetch and load data that is owned by City Bike Finland (journey data) and
@@ -23,21 +38,25 @@ column unique constraint/index, a bit doubtful about this... (temp table on inse
 
 Example for running data loader: `./gradlew run --args "dataloader"`
 
-### Environment variables
+## Getting started
+
+* 
+
+## Environment variables
 
 This table describes relevant variables when running the application in production mode. Micronaut allows property
 overriding using environment variables (like Spring does) but these are explicitly configured.
 
 #### Common
 
-| Environment variable            | Description                                                  | Default                                                   | Required | Example                                     |
-|---------------------------------|--------------------------------------------------------------|-----------------------------------------------------------|----------|---------------------------------------------|
-| `PORT`                          | Server port                                                  | `8080`                                                    |          |                                             |
-| `DATABASE_CONNECTION_URL`       | JDBC connection URL                                          | `jdbc:postgresql://host.docker.internal:5432/citybikeapp` |          | `jdbc:postgresql://foo.bar:5432/packlister` |
-| `DATABASE_CONNECTION_USERNAME`  | DB username                                                  | `postgres`                                                |          | `foo`                                       |
-| `DATABASE_CONNECTION_PASSWORD`  | DB password                                                  | `Hunter2`                                                 |          | `bar`                                       |
-| `CITYBIKEAPP_DEFAULT_PAGE_SIZE` | Default page size used in paginating queries                 | `50`                                                      |          |                                             |
-| `CITYBIKEAPP_MAX_PAGE_SIZE`     | Maximum client provided page size used in paginating queries | `50`                                                      |          |                                             |
+| Environment variable            | Description                                                  | Default                                                   | Required | Example                                      |
+|---------------------------------|--------------------------------------------------------------|-----------------------------------------------------------|----------|----------------------------------------------|
+| `PORT`                          | Server port                                                  | `8080`                                                    |          |                                              |
+| `DATABASE_CONNECTION_URL`       | JDBC connection URL                                          | `jdbc:postgresql://host.docker.internal:5432/citybikeapp` |          | `jdbc:postgresql://foo.bar:5432/citybikeapp` |
+| `DATABASE_CONNECTION_USERNAME`  | DB username                                                  | `postgres`                                                |          | `foo`                                        |
+| `DATABASE_CONNECTION_PASSWORD`  | DB password                                                  | `Hunter2`                                                 |          | `bar`                                        |
+| `CITYBIKEAPP_DEFAULT_PAGE_SIZE` | Default page size used in paginating queries                 | `50`                                                      |          |                                              |
+| `CITYBIKEAPP_MAX_PAGE_SIZE`     | Maximum client provided page size used in paginating queries | `50`                                                      |          |                                              |
 
 #### Data loader specific environment variables
 
@@ -53,7 +72,7 @@ overriding using environment variables (like Spring does) but these are explicit
 
 <a id="default_journey"></a>[2] `https://dev.hsl.fi/citybikes/od-trips-2021/2021-05.csv,https://dev.hsl.fi/citybikes/od-trips-2021/2021-06.csv,https://dev.hsl.fi/citybikes/od-trips-2021/2021-07.csv`
 
-### TODOs
+## TODOs
 
 * Use single testcontainer for all the tests. Even though running the full application is fast (compared to Spring), the
   database container is adding some overhead.

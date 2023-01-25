@@ -102,16 +102,6 @@ micronaut {
     }
 }
 
-configurations.all {
-    resolutionStrategy {
-        dependencySubstitution {
-            substitute(module("io.micronaut:micronaut-jackson-databind"))
-                .using(module("io.micronaut.serde:micronaut-serde-jackson:1.3.3"))
-        }
-        force("com.github.ben-manes.caffeine:caffeine:3.0.3") // jdbi has direct dependency
-    }
-}
-
 detekt {
     buildUponDefaultConfig = true
     source = files("$rootDir/src")
