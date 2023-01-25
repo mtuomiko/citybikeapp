@@ -126,6 +126,11 @@ Focus on the recommended features. For extra points, you might want to also comp
 * Implement E2E tests
 * Create UI for adding journeys or bicycle stations
 
+## Extra features
+
+* Pipeline generated Swagger docs available at [https://mtuomiko.github.io/citybikeapp/](https://mtuomiko.github.io/citybikeapp/)
+* API client generation for frontend using openapi-generator
+
 ## Returning the exercise
 
 If you wish to apply to Dev Academy, make sure to add the link to your GitHub repository to the application.

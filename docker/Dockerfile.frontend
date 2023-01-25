@@ -1,0 +1,39 @@
+# Use separate image for API client generation, avoids having to install Java on the node builder or creating a 
+# separate "master build stage"
+FROM openapitools/openapi-generator-cli:v6.2.1 as api-client-build-stage
+
+WORKDIR /local
+
+COPY citybikeapp-backend/gen/api.yml .
+
+RUN bash /usr/local/bin/docker-entrypoint.sh generate \
+    -i /local/api.yml \
+    -o /local/out \
+    -g typescript-axios \
+    --additional-properties=supportsES6=true
+
+###
+
+FROM node:18.13.0-alpine3.16 as build-stage
+
+WORKDIR /stage
+
+ENV CI=true
+
+COPY citybikeapp-frontend/package.json citybikeapp-frontend/package-lock.json .
+
+RUN npm ci
+
+COPY citybikeapp-frontend/ .
+COPY --from=api-client-build-stage /local/out/ ./src/generated
+
+RUN npm run build
+
+### Final image
+
+FROM nginx:1.23.3-alpine
+
+COPY --from=build-stage /stage/build /usr/share/nginx/html
+COPY citybikeapp-frontend/nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80

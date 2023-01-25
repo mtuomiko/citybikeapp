@@ -13,15 +13,25 @@ make more sense.
 
 ## Getting started
 
-#### Requirements
+Requirements
+* Node/npm. Developed on Node v18 so should work at least on that.
+* Java 8 runtime minimum for `openapi-generator`, see [API client generation](#api-clientgeneration)
 
-* Node/npm. Developed on v18 so should work at least on that.
+Running locally in dev mode
+* Install dependencies `npm ci --include=dev`
+* Generate API client `npm run client-gen`
+* Start `npm start`
+* Frontend served at [http://localhost:3003](http://localhost:3003)
 
 ## API client generation
 
-Frontend uses OpenAPI generator to create a `typescript-axios` client that contains all the API responses and their 
-types. This depends on having access to the backend OpenAPI specification file. In this monorepo, we can it access 
-directly from backend directory.
+Frontend depends on [OpenAPI Generator](https://github.com/OpenAPITools/openapi-generator) to create 
+a `typescript-axios` client that contains all the backend API responses and their types. This depends on having access 
+to the backend OpenAPI specification file. In this monorepo, we can it access directly from backend directory during 
+development.
+
+In image build process (see [Dockerfile.frontend](../docker/Dockerfile.frontend)), the code is generated using a 
+separate `openapitools/openapi-generator-cli` image.
 
 ## NPM commands
 
