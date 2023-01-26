@@ -13,8 +13,8 @@ services:
   frontend:
     image: mtuomiko/citybikeapp-frontend
     build:
-      context: ./citybikeapp-frontend
-      dockerfile: Dockerfile
+      context: . # code generation needs access to backend API spec file so using root context
+      dockerfile: docker/Dockerfile.frontend
     depends_on:
      - backend
   backend:

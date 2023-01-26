@@ -1,0 +1,9 @@
+citybikeapp-backend/.gradle/
+citybikeapp-backend/.idea/
+citybikeapp-backend/build/
+citybikeapp-backend/temp/
+citybikeapp-backend/bin/
+
+citybikeapp-frontend/node_modules/
+citybikeapp-frontend/.env
+citybikeapp-frontend/src/generated/
