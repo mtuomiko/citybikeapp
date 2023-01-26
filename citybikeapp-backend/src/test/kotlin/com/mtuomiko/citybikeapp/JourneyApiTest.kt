@@ -206,8 +206,8 @@ class JourneyApiTest {
         id.toString(),
         departureAt,
         arrivalAt,
-        departureStationId,
-        arrivalStationId,
+        departureStationId.toString(),
+        arrivalStationId.toString(),
         distance,
         duration
     )

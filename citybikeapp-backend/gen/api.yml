@@ -69,7 +69,8 @@ paths:
         in: query
         description: "Cursor to fetch the next page. Can expose some implementation\
           \ details, such as the values used in keyset pagination, but should be treated\
-          \ as an opaque string."
+          \ as an opaque string. Don't change other query parameters (except pageSize)\
+          \ when providing the cursor in order to receive a meaningful response."
         schema:
           type: string
       responses:
@@ -185,6 +186,9 @@ components:
       properties:
         nextCursor:
           type: string
+          description: Paging cursor. Treat as an opaque string. Does not include
+            the query parameters which produced the cursor so the next request using
+            the cursor must provide the same parameters for meaningful pagination.
           nullable: true
     HealthCheckType:
       type: string
@@ -236,21 +240,25 @@ components:
         departureAt:
           type: string
           format: date-time
+          nullable: false
         arrivalAt:
           type: string
           format: date-time
+          nullable: false
         departureStationId:
-          type: integer
-          format: int32
+          type: string
         arrivalStationId:
-          type: integer
-          format: int32
+          type: string
         distance:
           type: integer
+          description: Distance in meters
           format: int32
+          nullable: false
         duration:
           type: integer
+          description: Duration in seconds
           format: int32
+          nullable: false
     JourneysResponse:
       required:
       - journeys
@@ -371,24 +379,41 @@ components:
       properties:
         departureCount:
           type: integer
+          description: Amount of journeys departing from the queried station
           format: int64
+          nullable: false
         arrivalCount:
           type: integer
+          description: Amount of journeys arriving to the queried station
           format: int64
+          nullable: false
         departureAverageDistance:
           type: number
+          description: Average distance of departing journeys in meters
           format: double
+          nullable: false
         arrivalAverageDistance:
           type: number
+          description: Average distance of arriving journeys in meters
           format: double
+          nullable: false
         topStationsForArrivingHere:
           type: array
+          description: Sorted list of top five most popular (by journey count) stations
+            of journeys that end in the queried station. Most popular station is first
+            in the list.
+          nullable: false
           items:
             $ref: '#/components/schemas/TopStation'
         topStationsForDepartingTo:
           type: array
+          description: Sorted list of top five most popular (by journey count) stations
+            of journeys that start in the queried station. Most popular station is
+            first in the list.
+          nullable: false
           items:
             $ref: '#/components/schemas/TopStation'
+      description: Station statistics for a given station.
     StationsLimitedResponse:
       required:
       - stations
