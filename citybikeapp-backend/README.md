@@ -1,8 +1,8 @@
 # City Bike App backend
 
-## Requirements
-
-* Java JDK 17
+Note that application can be used to automatically fetch and load data that is owned by City Bike Finland (journey data)
+and Helsingin seudun liikenne (HSL) (station data). Data is licensed
+under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) as of 2nd January 2023.
 
 ## Used technologies
 
@@ -15,11 +15,29 @@
 * Code quality / static analysis: detekt, Spotless
 * Test coverage: JaCoCo
 
-## Data
+## Getting started
 
-Application can be used to automatically fetch and load data that is owned by City Bike Finland (journey data) and
-Helsingin seudun liikenne (HSL) (station data). Data is licensed
-under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) as of 2nd January 2023.
+Requirements
+
+* Java JDK 17
+* Docker host (for jOOQ code generation that runs against a temporary PostgreSQL container). podman might work
+* PostgreSQL 14 database access (when running)
+
+#### Running locally
+
+Use the correct Gradle wrapper for your environment: `gradlew.bat` for Windows, `gradlew`
+otherwise.
+
+* App assumes an existing PostgreSQL 14 instance to be available at `postgresql://host.docker.internal:5432/citybikeapp`
+  with credentials `postgres:Hunter2`. Run one for example with docker
+  using `docker run -d --restart --name dev-postgres -p 5432:5432 -e POSTGRES_USER=postgres POSTGRES_DB=citybikeapp -e POSTGRES_PASSWORD=Hunter2 postgres:14`
+* Run dataloading using Gradle task `run` with `dataloader` argument, for example
+  with `./gradlew run --args "dataloader"`
+* Run application using Gradle task `run`, for example with `./gradlew run`
+* Application API will be available under http://localhost:8080/
+
+Setting env vars on command line with Windows probably won't work as described above. Google the issue or just skip the
+environment selection.
 
 ## Data loader
 
@@ -27,9 +45,8 @@ Application can be started in a single run data loading mode by providing the co
 this mode, the actual server will not be started and the application will exit after completion.
 
 Data loader will read the provided configuration and download CSV files to batch insert their data to the database.
-Loader will only delete used local files when running in `prod` environment. This means that downloaded data can remain
-in place,
-containers also.
+Loader will only delete the used local files when running in `prod` environment. This means that downloaded data can
+remain in place, in containers also.
 
 Loader will perform simple validation and cleaning on the data. Anything not matching the assumed format or data model,
 will cause the entry to be ignored. Duplicate entries are ignored. For stations the primary key ID is pulled straight
@@ -37,10 +54,6 @@ from source CSV and subsequent INSERTs on same ID are ignored. For journeys the 
 column unique constraint/index, a bit doubtful about this... (temp table on insert could work also?)
 
 Example for running data loader: `./gradlew run --args "dataloader"`
-
-## Getting started
-
-* 
 
 ## Environment variables
 
