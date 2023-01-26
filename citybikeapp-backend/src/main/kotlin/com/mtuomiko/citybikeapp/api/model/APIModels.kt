@@ -40,13 +40,36 @@ data class APIStationLimited(
 )
 
 @Serdeable
-@Schema(name = "StationStatistics")
+@Schema(
+    name = "StationStatistics",
+    description = "Station statistics for a given station."
+)
 data class APIStationStatistics(
+    @field:Schema(
+        description = "Amount of journeys departing from the queried station",
+        nullable = false,
+        required = true
+    )
     val departureCount: Long,
+    @field:Schema(description = "Amount of journeys arriving to the queried station", nullable = false, required = true)
     val arrivalCount: Long,
+    @field:Schema(description = "Average distance of departing journeys in meters", nullable = false, required = true)
     val departureAverageDistance: Double,
+    @field:Schema(description = "Average distance of arriving journeys in meters", nullable = false, required = true)
     val arrivalAverageDistance: Double,
+    @field:Schema(
+        description = "Sorted list of top five most popular (by journey count) stations of journeys that end in " +
+            "the queried station. Most popular station is first in the list.",
+        nullable = false,
+        required = true
+    )
     val topStationsForArrivingHere: List<APITopStation>,
+    @field:Schema(
+        description = "Sorted list of top five most popular (by journey count) stations of journeys that start in " +
+            "the queried station. Most popular station is first in the list.",
+        nullable = false,
+        required = true
+    )
     val topStationsForDepartingTo: List<APITopStation>
 )
 
@@ -64,6 +87,11 @@ class Meta(
 
 @Serdeable
 class CursorMeta(
+    @field:Schema(
+        description = "Paging cursor. Treat as an opaque string. Does not include the query parameters " +
+            "which produced the cursor so the next request using the cursor must provide the same parameters for " +
+            "meaningful pagination."
+    )
     val nextCursor: String?
 )
 
@@ -71,11 +99,15 @@ class CursorMeta(
 @Schema(name = "Journey")
 data class APIJourney(
     val id: String,
+    @field:Schema(format = "date-time", nullable = false, required = true)
     val departureAt: Instant,
+    @field:Schema(format = "date-time", nullable = false, required = true)
     val arrivalAt: Instant,
-    val departureStationId: Int,
-    val arrivalStationId: Int,
+    val departureStationId: String,
+    val arrivalStationId: String,
+    @field:Schema(description = "Distance in meters", nullable = false, required = true)
     val distance: Int,
+    @field:Schema(description = "Duration in seconds", nullable = false, required = true)
     val duration: Int
 )
 

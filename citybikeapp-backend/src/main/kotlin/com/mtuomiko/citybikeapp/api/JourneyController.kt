@@ -50,7 +50,9 @@ class JourneyController(
                 name = "nextCursor",
                 `in` = ParameterIn.QUERY,
                 description = "Cursor to fetch the next page. Can expose some implementation details, such as the " +
-                    "values used in keyset pagination, but should be treated as an opaque string.",
+                    "values used in keyset pagination, but should be treated as an opaque string. Don't change " +
+                    "other query parameters (except pageSize) when providing the cursor in order to receive " +
+                    "a meaningful response.",
                 schema = Schema(type = "string")
             )
         ]
@@ -69,8 +71,8 @@ class JourneyController(
             id.toString(),
             departureAt,
             arrivalAt,
-            departureStationId,
-            arrivalStationId,
+            departureStationId.toString(),
+            arrivalStationId.toString(),
             distance,
             duration
         )
