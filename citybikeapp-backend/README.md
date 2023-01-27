@@ -30,14 +30,11 @@ otherwise.
 
 * App assumes an existing PostgreSQL 14 instance to be available at `postgresql://host.docker.internal:5432/citybikeapp`
   with credentials `postgres:Hunter2`. Run one for example with docker
-  using `docker run -d --restart --name dev-postgres -p 5432:5432 -e POSTGRES_USER=postgres POSTGRES_DB=citybikeapp -e POSTGRES_PASSWORD=Hunter2 postgres:14`
+  using `docker run -d --restart --name dev-postgres -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_DB=citybikeapp -e POSTGRES_PASSWORD=Hunter2 postgres:14`
 * Run dataloading using Gradle task `run` with `dataloader` argument, for example
   with `./gradlew run --args "dataloader"`
 * Run application using Gradle task `run`, for example with `./gradlew run`
 * Application API will be available under http://localhost:8080/
-
-Setting env vars on command line with Windows probably won't work as described above. Google the issue or just skip the
-environment selection.
 
 ## Data loader
 

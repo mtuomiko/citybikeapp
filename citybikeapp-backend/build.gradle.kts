@@ -207,3 +207,10 @@ jooq {
         }
     }
 }
+
+tasks.named<nu.studer.gradle.jooq.JooqGenerate>("generateJooq") {
+    inputs.files(fileTree("src/main/resources/db/migration"))
+        .withPropertyName("migrations")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    allInputsDeclared.set(true)
+}
