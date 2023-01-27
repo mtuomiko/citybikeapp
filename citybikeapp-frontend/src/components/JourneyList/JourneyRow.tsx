@@ -3,6 +3,7 @@ import React, { } from "react";
 import { Link as ReactRouterLink } from "react-router-dom";
 import { useStationsLimited } from "contexts/StationsLimitedContext";
 import { Journey } from "types";
+import { metersToKilometers } from "utils/unitConversion";
 
 const JourneyRow = ({ journey }: { journey: Journey }) => {
   const { state } = useStationsLimited();
@@ -16,10 +17,6 @@ const JourneyRow = ({ journey }: { journey: Journey }) => {
       </Tooltip>
     </Td>
   );
-
-  const metersToKilometers = (meters: number) => {
-    return (meters / 1000).toFixed(1);
-  };
 
   // Round down unless result would be zero minutes
   const secondsToMinutes = (seconds: number) => {
