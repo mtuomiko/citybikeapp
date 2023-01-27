@@ -38,6 +38,7 @@ const config = (env, argv) => {
       historyApiFallback: true,
       allowedHosts: "all"
     },
+    devtool: 'source-map',
     plugins: [
       new HtmlWebpackPlugin({
         title: "City Bike App",
