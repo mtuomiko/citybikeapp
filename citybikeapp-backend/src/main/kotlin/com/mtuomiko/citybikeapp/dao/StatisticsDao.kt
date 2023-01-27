@@ -20,17 +20,25 @@ class StatisticsDao(
         return journeyRepository.getJourneyStatisticsByStationId(stationId, from, to).await()
     }
 
-    suspend fun getTopStationsByStationId(stationId: Int, from: Instant?, to: Instant?): TopStations {
-        val topStationsQueryResult = journeyRepository.getTopStationsByStationId(stationId, from, to).await()
+    suspend fun getTopStationsByStationId(
+        stationId: Int,
+        from: Instant?,
+        to: Instant?,
+        limitPerDirection: Int = 5
+    ): TopStations {
+        val topStationsQueryResult =
+            journeyRepository.getTopStationsByStationId(stationId, limitPerDirection, from, to).await()
 
         val arrivalStations = topStationsQueryResult
             .filter { it.arrivalStationId == stationId }
             .sortedByDescending { it.journeyCount }
+            .take(limitPerDirection)
             .map { TopStation(it.departureStationId, it.journeyCount) }
 
         val departureStations = topStationsQueryResult
             .filter { it.departureStationId == stationId }
             .sortedByDescending { it.journeyCount }
+            .take(limitPerDirection)
             .map { TopStation(it.arrivalStationId, it.journeyCount) }
 
         return TopStations(forArrivingHere = arrivalStations, forDepartingTo = departureStations)

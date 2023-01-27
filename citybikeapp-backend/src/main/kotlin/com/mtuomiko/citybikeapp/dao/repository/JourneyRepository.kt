@@ -119,9 +119,9 @@ class JourneyRepository(private val ctx: DSLContext) {
 
     fun getTopStationsByStationId(
         stationId: Int,
+        limitPerDirection: Int,
         from: Instant? = null,
-        to: Instant? = null,
-        limitPerDirection: Int = 5
+        to: Instant? = null
     ): Deferred<List<TopStationsQueryResult>> {
         val departureStationsCondition =
             JOURNEY.ARRIVAL_STATION_ID.eq(stationId).andDepartureTimestampCondition(from, to)

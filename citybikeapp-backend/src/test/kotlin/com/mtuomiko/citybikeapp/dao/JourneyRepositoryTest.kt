@@ -20,6 +20,6 @@ class JourneyRepositoryTest(
 
     @Test
     fun `Top stations query can be run`() {
-        journeyRepository.getTopStationsByStationId(100)
+        journeyRepository.getTopStationsByStationId(100, 5)
     }
 }
