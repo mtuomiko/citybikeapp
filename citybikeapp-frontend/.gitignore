@@ -5,6 +5,7 @@
 !/build/.gitkeep
 
 .env
+sourcemap.html
 
 /src/generated/*
 !/src/generated/.gitkeep

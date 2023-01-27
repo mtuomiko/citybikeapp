@@ -1,4 +1,4 @@
-import { Box, Button, Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
+import { Box, Button, Table, TableContainer, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { TriangleDownIcon, TriangleUpIcon } from "@chakra-ui/icons";
 import { useStationsLimited } from "contexts/StationsLimitedContext";
@@ -32,7 +32,7 @@ const JourneyList = () => {
   const [journeys, setJourneys] = useState<Journey[]>([]);
 
   useEffect(() => {
-    const getStation = async () => {
+    const getJourneys = async () => {
       const response = await journeyService.getJourneys({
         orderBy: parameters.orderBy,
         direction: (parameters.ascending) ? DirectionEnum.Ascending : DirectionEnum.Descending,
@@ -44,7 +44,7 @@ const JourneyList = () => {
       setCursor(response.cursor);
     };
 
-    void getStation();
+    void getJourneys();
   }, [parameters]);
 
   const handleOrderByClick = (orderBy: OrderBy) => {
@@ -86,7 +86,7 @@ const JourneyList = () => {
         onClick={() => { handleOrderByClick(orderBy); }}
       >{header.displayTitle}</Button>
       : <Box>{header.displayTitle}</Box>;
-    return <Th>{element}</Th>;
+    return <Th key={header.displayTitle}>{element}</Th>;
   };
 
   const createTableHeaders = () => {
@@ -102,7 +102,7 @@ const JourneyList = () => {
   if (state.stations.allIds.length === 0) return <div>Still loading or no results</div>;
 
   return (
-    <div>
+    <TableContainer>
       <Table>
         {createTableHeaders()}
         <Tbody>
@@ -114,7 +114,7 @@ const JourneyList = () => {
           }
         </Tbody>
       </Table>
-    </div>
+    </TableContainer>
   );
 };
 

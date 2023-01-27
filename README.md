@@ -5,13 +5,13 @@ This is a monorepository for implementing the [pre-assignment for Solita Dev Aca
 ## Quick start
 
 This quick start requires Java JDK 17, a Docker host, Docker Compose and local port `8080` to be available on the host 
-machine.
+machine. You can also run [frontend](citybikeapp-frontend/) and [backend](citybikeapp-backend/) individually.
 
 1. Build backend and generate its Dockerfile. Select Gradle wrapper depending on the host OS: `gradlew.bat` file for 
-   Windows, otherwise `gradlew` file.
+   Windows, otherwise use `gradlew` file like in the example below.
     * Run `./citybikeapp-backend/gradlew -p ./citybikeapp-backend buildLayers dockerfile` at project root
 1. Run the local docker-compose setup.
-    * Run `docker compose -f docker-compose.local.yml --profile dataloader up` at project root
+    * Run `docker compose -f docker-compose.local.yml --env-file .env.local --profile dataloader up` at project root
     * Wait for the station and journey data loading to complete, or don't, the application should be available before 
       the loading completes.
 1. City Bike App is found at [http://localhost:8080](http://localhost:8080)
@@ -34,8 +34,6 @@ Also, there is a dataset that has information about Helsinki Region Transport’
 
 * Dataset: <https://opendata.arcgis.com/datasets/726277c507ef4914b0aec3cbcfcbfafc_0.csv>
 * License and information: <https://www.avoindata.fi/data/en/dataset/hsl-n-kaupunkipyoraasemat/resource/a23eef3a-cc40-4608-8aa2-c730d17e8902>
-
-If you have trouble downloading the datasets, please contact heikki.hamalainen@solita.fi or meri.merkkiniemi@solita.fi
 
 ## The exercise
 
@@ -81,12 +79,12 @@ Focus on the recommended features. For extra points, you might want to also comp
 
 * List journeys ✅
     * If you don't implement pagination, use some hard-coded limit for the list length because showing several million rows would make any browser choke
-* For each journey show departure and return stations, covered distance in kilometers and duration in minutes
+* For each journey show departure and return stations, covered distance in kilometers and duration in minutes ✅
 
 #### Additional
 
-* Pagination
-* Ordering per column
+* Pagination ✅
+* Ordering per column ✅
 * Searching
 * Filtering
 
@@ -98,8 +96,8 @@ Focus on the recommended features. For extra points, you might want to also comp
 
 #### Additional
 
-* Pagination
-* Searching
+* Pagination ✅
+* Searching ✅
 
 ### Single station view
 
@@ -111,7 +109,7 @@ Focus on the recommended features. For extra points, you might want to also comp
 * Total number of journeys ending at the station ✅
 
 #### Additional
-* Station location on the map
+* Station location on the map ✅
 * The average distance of a journey starting from the station ✅
 * The average distance of a journey ending at the station ✅
 * Top 5 most popular return stations for journeys starting from the station ✅

@@ -23,17 +23,17 @@ services:
       context: ./citybikeapp-backend/build/docker/main/
       dockerfile: Dockerfile
     environment:
-      DATABASE_CONNECTION_URL: jdbc:postgresql://db:5432/citybikeapp
-      DATABASE_CONNECTION_USERNAME: postgres
-      DATABASE_CONNECTION_PASSWORD: Hunter2
+      - DATABASE_CONNECTION_URL
+      - DATABASE_CONNECTION_USERNAME
+      - DATABASE_CONNECTION_PASSWORD
     depends_on:
      - db
   dataloader:
     image: mtuomiko/citybikeapp-backend
     environment:
-      DATABASE_CONNECTION_URL: jdbc:postgresql://db:5432/citybikeapp
-      DATABASE_CONNECTION_USERNAME: postgres
-      DATABASE_CONNECTION_PASSWORD: Hunter2
+      - DATABASE_CONNECTION_URL
+      - DATABASE_CONNECTION_USERNAME
+      - DATABASE_CONNECTION_PASSWORD
     command: dataloader
     depends_on:
      - backend
@@ -43,6 +43,6 @@ services:
   db:
     image: postgres:14
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Hunter2
+      POSTGRES_USER: ${DATABASE_CONNECTION_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_CONNECTION_PASSWORD}
       POSTGRES_DB: citybikeapp

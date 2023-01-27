@@ -39,6 +39,7 @@ separate `openapitools/openapi-generator-cli` image.
 * `start` run development mode (`webpack-dev-server`)
 * `lint` run `eslint`
 * `client-gen` generate API client using backend OpenAPI specification
+* `analyze` create source map visualization to `sourcemap.html` (see [source-map-explorer](https://github.com/danvk/source-map-explorer))
 
 ## Environment variables
 
