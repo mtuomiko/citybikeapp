@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import App from "App";
 import StationDetailsView from "components/StationDetailsView";
 import StationList from "components/StationList";
@@ -29,10 +29,20 @@ const router = createBrowserRouter([
   },
 ]);
 
+const theme = extendTheme({
+  components: {
+    Link: {
+      baseStyle: {
+        fontWeight: "semibold"
+      }
+    }
+  }
+});
+
 const root = createRoot(document.getElementById("root") as HTMLElement);
 root.render(
   <React.StrictMode>
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <StationsLimitedProvider>
         <RouterProvider router={router} />
       </StationsLimitedProvider>

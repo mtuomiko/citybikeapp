@@ -1,5 +1,5 @@
 import { CloseIcon, HamburgerIcon } from "@chakra-ui/icons";
-import { Box, Flex, HStack, IconButton, Link, useColorModeValue } from "@chakra-ui/react";
+import { Box, Button, Flex, HStack, IconButton, Link, useColorModeValue } from "@chakra-ui/react";
 import { Link as ReactRouterLink } from "react-router-dom";
 import React from "react";
 
@@ -19,8 +19,8 @@ const Navbar = ({ isMobileOpen, onToggle }: { isMobileOpen: boolean, onToggle: (
             spacing={4}
             display={{ base: "none", md: "flex" }}
           >
-            <Link as={ReactRouterLink} to="/stations">Stations</Link>
-            <Link as={ReactRouterLink} to="/journeys">Journeys</Link>
+            <Link as={ReactRouterLink} to="/stations"><Button>Stations</Button></Link>
+            <Link as={ReactRouterLink} to="/journeys"><Button>Journeys</Button></Link>
           </HStack>
         </HStack>
       </Flex>
