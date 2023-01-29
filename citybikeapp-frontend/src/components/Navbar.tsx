@@ -19,8 +19,8 @@ const Navbar = ({ isMobileOpen, onToggle }: { isMobileOpen: boolean, onToggle: (
             spacing={4}
             display={{ base: "none", md: "flex" }}
           >
-            <Link as={ReactRouterLink} to="/stations"><Button>Stations</Button></Link>
-            <Link as={ReactRouterLink} to="/journeys"><Button>Journeys</Button></Link>
+            <Link data-cy="navbar-link-stations" as={ReactRouterLink} to="/stations"><Button>Stations</Button></Link>
+            <Link data-cy="navbar-link-journeys" as={ReactRouterLink} to="/journeys"><Button>Journeys</Button></Link>
           </HStack>
         </HStack>
       </Flex>

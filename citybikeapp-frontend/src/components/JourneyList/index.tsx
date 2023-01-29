@@ -105,7 +105,7 @@ const JourneyList = () => {
     <TableContainer>
       <Table>
         {createTableHeaders()}
-        <Tbody>
+        <Tbody data-cy="journey-list-table-body">
           {journeys.map(journey => (
             <JourneyRow key={journey.id} journey={journey} />
           ))}

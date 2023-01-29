@@ -74,7 +74,7 @@ const StationList = () => {
               <Th>Capacity</Th>
             </Tr>
           </Thead>
-          <Tbody>
+          <Tbody data-cy="station-list-table-body">
             {stations.map(station => (
               <Tr key={station.id}>
                 <Td>
