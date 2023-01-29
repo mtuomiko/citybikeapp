@@ -2,9 +2,10 @@ package com.mtuomiko.citybikeapp.api
 
 import com.mtuomiko.citybikeapp.api.mapper.StationAPIMapper
 import com.mtuomiko.citybikeapp.api.model.Meta
-import com.mtuomiko.citybikeapp.api.model.StationDetailsWithStatisticsResponse
+import com.mtuomiko.citybikeapp.api.model.StationDetailsResponse
 import com.mtuomiko.citybikeapp.api.model.StationsLimitedResponse
 import com.mtuomiko.citybikeapp.api.model.StationsResponse
+import com.mtuomiko.citybikeapp.api.model.StatisticsResponse
 import com.mtuomiko.citybikeapp.common.BadRequestError
 import com.mtuomiko.citybikeapp.common.ErrorMessages.INVALID_QUERY_PARAMETER
 import com.mtuomiko.citybikeapp.common.InnerError
@@ -19,10 +20,11 @@ import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.scheduling.annotation.ExecuteOn
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.inject.Inject
 import mu.KotlinLogging
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -56,9 +58,9 @@ class StationController(
         summary = "Get stations using pagination and optional text search.",
         description = "Returns multiple stations with a maximum page size of given page size parameter. If page size" +
             " is not defined then application default is used. Page number can be provided to paginate results. " +
-            "Optional search string can be used to limit matches. Note that if paginating query params result in no " +
-            "stations, the total pages count might not hold true! That is, there could still be possible earlier " +
-            "results."
+            "Optional search string can be used to limit matches. Note that if paginating query params result in " +
+            "no stations, the total pages count might not hold true! That is, there could still be possible " +
+            "earlier results."
     )
     @Get
     @Suppress("ThrowsCount")
@@ -89,34 +91,65 @@ class StationController(
 
     /**
      * @param id Station ID
-     * @param fromDate Earliest journey date to include in station statistics
-     * @param toDate Latest journey date to include in station statistics
      */
     @Get("/{id}")
     @Operation(
-        summary = "Get single station information with statistics",
-        description = "Single station information including journey statistics. Statistics are filtered using the " +
-            "optional query parameters. Note that malformed query parameters do not result in failure."
+        summary = "Get single station detailed information"
     )
-    fun getStationWithStatistics(
-        @PathVariable id: Int,
-        @Parameter(example = "2021-06-15") @QueryValue @Nullable
-        fromDate: LocalDate?,
-        @Parameter(example = "2021-07-02") @QueryValue @Nullable
-        toDate: LocalDate?
-    ): StationDetailsWithStatisticsResponse {
-        validateDates(fromDate, toDate)
+    fun getStationDetails(@PathVariable id: Int): StationDetailsResponse {
         val station = stationService.getStationById(id) ?: throw NotFoundError("Station not found")
 
-        val stationStatistics = stationService.getStationStatistics(id, fromDate, toDate)
-
-        return StationDetailsWithStatisticsResponse(
-            station = mapper.toApi(station),
-            statistics = mapper.toApi(stationStatistics)
+        return StationDetailsResponse(
+            station = mapper.toApi(station)
         )
     }
 
-    private fun validateDates(fromDate: LocalDate?, toDate: LocalDate?) {
+    /**
+     * @param id Station ID
+     * @param from Earliest moment in time to include in statistics. Timestamp without timezone. Will be
+     * interpreted as local Helsinki time internally.
+     * @param to Latest moment in time to include in statistics. Timestamp without timezone. Will be
+     * interpreted as local Helsinki time internally.
+     */
+    @Get("/{id}/statistics")
+    @Operation(
+        summary = "Get statistics for a single station",
+        description = "Statistics are filtered using the optional query parameters. Note that malformed query " +
+            "parameters do not result in failure. Journey is included in statistics if its departure timestamp " +
+            "is between the from and to parameters. Timestamps must be without timezone or UTC designator (Z)." +
+            "They are interpreted in local Helsinki time internally. Example: if you want journey statistics " +
+            "until end of June 2022, use format 2022-06-30T23:59:59"
+    )
+    fun getStationStatistics(
+        @PathVariable id: Int,
+        @Parameter(
+            schema = Schema(
+                type = "string",
+                format = "timestamp without time zone",
+                nullable = true,
+                example = "2023-01-29T13:47:51"
+            )
+        ) @QueryValue @Nullable
+        from: LocalDateTime?,
+        @Parameter(
+            schema = Schema(
+                type = "string",
+                format = "timestamp without time zone",
+                nullable = true,
+                example = "2023-01-29T13:47:51"
+            )
+        ) @QueryValue @Nullable
+        to: LocalDateTime?
+    ): StatisticsResponse {
+        validateDates(from, to)
+        if (!stationService.stationExists(id)) throw NotFoundError("Station not found")
+
+        val statistics = stationService.getStationStatistics(id, from, to)
+
+        return StatisticsResponse(statistics = mapper.toApi(statistics))
+    }
+
+    private fun validateDates(fromDate: LocalDateTime?, toDate: LocalDateTime?) {
         if (fromDate != null && toDate != null && fromDate > toDate) {
             throw BadRequestError(
                 "query parameter `fromDate` date cannot be after `toDate` date",

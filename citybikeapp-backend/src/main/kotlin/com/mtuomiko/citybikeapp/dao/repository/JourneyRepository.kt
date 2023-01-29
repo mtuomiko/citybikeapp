@@ -23,6 +23,7 @@ import java.time.Instant
 class JourneyRepository(private val ctx: DSLContext) {
     // null offset id argument position to use for fields insert of new journeys without ids
     private val nullOffsetWithoutIdFields = listOf(null) + JOURNEY.fields().filter { it != JOURNEY.ID }
+    private val fieldsExcludingId = JOURNEY.fields().filter { it != JOURNEY.ID }
 
     fun saveAll(journeys: List<JourneyEntity>): List<JourneyEntity> {
         return journeys.map(::save)
@@ -33,9 +34,24 @@ class JourneyRepository(private val ctx: DSLContext) {
             .fetchOne()!!.toEntity()
     }
 
+    fun saveAllNewJourneys(journeys: List<JourneyNew>): List<JourneyEntity> {
+        return journeys.map(::saveNewJourney)
+    }
+
+    fun saveNewJourney(journey: JourneyNew): JourneyEntity {
+        return ctx.insertInto(JOURNEY)
+            .columns(fieldsExcludingId)
+            .values(journey.toRecord().toValuesExcludingId())
+            .returning().fetchOne()!!.toEntity()
+    }
+
     fun deleteAll() {
         ctx.delete(JOURNEY).execute()
     }
+
+//    fun deleteAllById(ids: List<Int>) {
+//        ctx.delete(JOURNEY).where()
+//    }
 
     fun findAll(): List<JourneyEntity> {
         return ctx.selectFrom(JOURNEY).fetch().map { it.toEntity() }
@@ -93,7 +109,7 @@ class JourneyRepository(private val ctx: DSLContext) {
     ): Deferred<JourneyStatistics> {
         return with(JOURNEY) {
             val condition = DEPARTURE_STATION_ID.eq(stationId).or(ARRIVAL_STATION_ID.eq(stationId))
-                .andDepartureTimestampCondition(from, to)
+                .addDepartureTimestampConditions(from, to)
 
             ctx.select(
                 count().filterWhere(DEPARTURE_STATION_ID.eq(stationId)),
@@ -124,9 +140,9 @@ class JourneyRepository(private val ctx: DSLContext) {
         to: Instant? = null
     ): Deferred<List<TopStationsQueryResult>> {
         val departureStationsCondition =
-            JOURNEY.ARRIVAL_STATION_ID.eq(stationId).andDepartureTimestampCondition(from, to)
+            JOURNEY.ARRIVAL_STATION_ID.eq(stationId).addDepartureTimestampConditions(from, to)
         val arrivalStationsCondition =
-            JOURNEY.DEPARTURE_STATION_ID.eq(stationId).andDepartureTimestampCondition(from, to)
+            JOURNEY.DEPARTURE_STATION_ID.eq(stationId).addDepartureTimestampConditions(from, to)
 
         return createJourneyStatisticSelect(departureStationsCondition, limitPerDirection)
             .union(createJourneyStatisticSelect(arrivalStationsCondition, limitPerDirection))
@@ -154,9 +170,20 @@ class JourneyRepository(private val ctx: DSLContext) {
             .limit(limitPerDirection)
     }
 
-    private fun Condition.andDepartureTimestampCondition(from: Instant?, to: Instant?) =
-        this.apply { if (from != null) and(JOURNEY.DEPARTURE_AT.greaterOrEqual(from)) }
-            .apply { if (to != null) and(JOURNEY.DEPARTURE_AT.lessThan(to)) }
+    private fun Condition.addDepartureTimestampConditions(from: Instant?, to: Instant?) =
+        this.run {
+            if (from != null) {
+                and(JOURNEY.DEPARTURE_AT.greaterOrEqual(from))
+            } else {
+                this
+            }
+        }.run {
+            if (to != null) {
+                and(JOURNEY.DEPARTURE_AT.lessThan(to))
+            } else {
+                this
+            }
+        }
 
     private fun JourneyNew.toRecord() = JourneyRecord(
         null,
@@ -187,4 +214,6 @@ class JourneyRepository(private val ctx: DSLContext) {
         distance!!,
         duration!!
     )
+
+    private fun JourneyRecord.toValuesExcludingId() = this.intoList().drop(1)
 }

@@ -52,7 +52,7 @@ class JourneyController(
                 description = "Cursor to fetch the next page. Can expose some implementation details, such as the " +
                     "values used in keyset pagination, but should be treated as an opaque string. Don't change " +
                     "other query parameters (except pageSize) when providing the cursor in order to receive " +
-                    "a meaningful response.",
+                    "a meaningful response, meaning the cursor is only valid for the same set of parameters.",
                 schema = Schema(type = "string")
             )
         ]

@@ -8,8 +8,7 @@ import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalTime
+import java.time.LocalDateTime
 import java.time.ZoneId
 
 class StationServiceTest {
@@ -20,10 +19,10 @@ class StationServiceTest {
     private val timezone = ZoneId.of("Europe/Helsinki")
 
     @Test
-    fun `When station statistics are called with date args, DAO is called with Helsinki zoned timestamps`() {
+    fun `When station statistics are called with local date time, DAO is called with Helsinki zoned timestamps`() {
         val id = 66
-        val summerDate = LocalDate.parse("2018-07-03")
-        val winterDate = LocalDate.parse("2019-01-09")
+        val fromDate = LocalDateTime.parse("2018-07-03T08:30:15")
+        val toDate = LocalDateTime.parse("2019-01-09T12:24:24")
         val intCaptor = mutableListOf<Int>()
         val instantCaptor = mutableListOf<Instant>()
 
@@ -42,10 +41,10 @@ class StationServiceTest {
             )
         } returns mockk(relaxed = true)
 
-        stationService.getStationStatistics(stationId = id, fromDate = summerDate, toDate = winterDate)
+        stationService.getStationStatistics(stationId = id, from = fromDate, to = toDate)
 
-        val expectedFrom = summerDate.atTime(LocalTime.MIDNIGHT).atZone(timezone).toInstant()
-        val expectedTo = winterDate.atTime(LocalTime.MAX).atZone(TIMEZONE).toInstant()
+        val expectedFrom = fromDate.atZone(timezone).toInstant()
+        val expectedTo = toDate.atZone(TIMEZONE).toInstant()
         assertThat(intCaptor).hasSize(2)
         assertThat(intCaptor).allMatch { it == id }
         assertThat(instantCaptor).hasSize(4)

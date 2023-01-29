@@ -4,9 +4,10 @@ import com.mtuomiko.citybikeapp.api.model.APIStation
 import com.mtuomiko.citybikeapp.api.model.APIStationDetails
 import com.mtuomiko.citybikeapp.api.model.APIStationLimited
 import com.mtuomiko.citybikeapp.api.model.APIStationStatistics
-import com.mtuomiko.citybikeapp.api.model.StationDetailsWithStatisticsResponse
+import com.mtuomiko.citybikeapp.api.model.StationDetailsResponse
 import com.mtuomiko.citybikeapp.api.model.StationsLimitedResponse
 import com.mtuomiko.citybikeapp.api.model.StationsResponse
+import com.mtuomiko.citybikeapp.api.model.StatisticsResponse
 import com.mtuomiko.citybikeapp.dao.builder.StationEntityBuilder
 import com.mtuomiko.citybikeapp.dao.entity.StationEntity
 import com.mtuomiko.citybikeapp.dao.repository.StationRepository
@@ -72,10 +73,10 @@ class StationApiTest {
     }
 
     @Test
-    fun `Single station endpoint responds with details`() {
+    fun `Single station endpoint responds with station details`() {
         val testStation = testStations.last()
         val request = HttpRequest.GET<Any>("/${testStation.id}")
-        val response = client.exchange(request, StationDetailsWithStatisticsResponse::class.java)
+        val response = client.exchange(request, StationDetailsResponse::class.java)
 
         val expectedStationsDetails = with(testStation) {
             APIStationDetails(
@@ -93,12 +94,9 @@ class StationApiTest {
                 latitude
             )
         }
-        // no journeys in test data so stats should be zero/empty
-        val expectedStatistics = APIStationStatistics(0, 0, 0.0, 0.0, emptyList(), emptyList())
 
         assertThat(response.status).isEqualTo(HttpStatus.OK)
         assertThat(response.body()!!.station).isEqualTo(expectedStationsDetails)
-        assertThat(response.body()!!.statistics).isEqualTo(expectedStatistics)
     }
 
     @Test
@@ -199,6 +197,19 @@ class StationApiTest {
         assertThat(response.status).isEqualTo(HttpStatus.OK)
         assertThat(response.body()!!.stations).containsExactlyInAnyOrderElementsOf(expected)
         assertThat(response.body()!!.meta.totalPages).isEqualTo(4)
+    }
+
+    @Test
+    fun `Station statistics endpoint`() {
+        val testStation = testStations.last()
+        val request = HttpRequest.GET<Any>("/${testStation.id}/statistics")
+        val response = client.exchange(request, StatisticsResponse::class.java)
+
+        // no journeys in test data so stats should be zero/empty
+        val expectedStatistics = APIStationStatistics(0, 0, 0.0, 0.0, emptyList(), emptyList())
+
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.body()!!.statistics).isEqualTo(expectedStatistics)
     }
 
     private fun StationEntity.toApi() =

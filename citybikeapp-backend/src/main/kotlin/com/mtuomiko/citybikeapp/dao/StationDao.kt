@@ -18,6 +18,8 @@ class StationDao(
 ) {
     fun getStationById(stationId: Int): StationDetails? = stationRepository.findById(stationId)?.toDetailsModel()
 
+    fun stationExists(stationId: Int) = stationRepository.existsById(stationId)
+
     fun getAllStationsLimited() =
         stationRepository.getAllStationsLimited().map { StationLimited(it.id, it.nameFinnish) }
 

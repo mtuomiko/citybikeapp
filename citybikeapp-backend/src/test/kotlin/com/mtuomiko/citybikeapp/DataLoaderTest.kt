@@ -35,7 +35,7 @@ class DataLoaderTest {
 
         val allJourneys = journeyRepository.findAll()
         val allStations = stationRepository.findAll()
-        // TODO: magic numbers based on csv file, should make this more reasonable
+        // TODO: Use more readable testing methods. Magic numbers below are based on the csv file contents
         assertThat(allJourneys).hasSize(8)
         assertThat(allStations).hasSize(10)
     }

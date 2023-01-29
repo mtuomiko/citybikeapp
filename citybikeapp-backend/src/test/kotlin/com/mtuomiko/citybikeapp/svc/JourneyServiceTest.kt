@@ -95,10 +95,10 @@ class JourneyServiceTest {
     }
 
     @Test
-    fun `Given timestamp order by and integer based cursor, exception is thrown`() {
+    fun `Given timestamp order by and non-integer based cursor, exception is thrown`() {
         val queryParameters = mapOf(
             "orderBy" to "departureAt",
-            "nextCursor" to "500|20"
+            "nextCursor" to "foo|20"
         )
 
         val thrown = catchThrowable {
@@ -107,7 +107,7 @@ class JourneyServiceTest {
 
         verify(exactly = 0) { journeyRepository.listJourneys(any(), any(), any(), any()) }
         assertThat(thrown).isInstanceOf(Exception::class.java)
-            .hasMessageContaining("failed to parse `500` to type java.time.Instant")
+            .hasMessageContaining("failed to parse `foo` to type java.time.Instant")
     }
 
     @Test

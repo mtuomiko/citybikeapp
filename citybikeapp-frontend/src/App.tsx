@@ -1,4 +1,4 @@
-import { useDisclosure } from "@chakra-ui/react";
+import { Box, useDisclosure } from "@chakra-ui/react";
 import React, { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "components/Navbar";
@@ -18,10 +18,10 @@ const App = () => {
   }, []);
 
   return (
-    <div>
+    <Box maxW={{ xl: "1200px" }} m="0 auto">
       <Navbar isMobileOpen={isOpen} onToggle={onToggle} />
       <Outlet />
-    </div>
+    </Box>
   );
 };
 

@@ -1,3 +1,5 @@
+# Assumed docker context is the project root, not frontend folder
+
 # Use separate image for API client generation, avoids having to install Java on the node builder or creating a 
 # separate "master build stage"
 FROM openapitools/openapi-generator-cli:v6.2.1 as api-client-build-stage
