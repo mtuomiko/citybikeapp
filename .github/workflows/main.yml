@@ -53,7 +53,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - name: Setup Gradle # use caching for Gradle
-        working-directory: citybikeapp-backend
         uses: gradle/gradle-build-action@v2
         with:
           build-root-directory: citybikeapp-backend
@@ -69,14 +68,16 @@ jobs:
           MICRONAUT_ENVIRONMENTS: e2e
           CITYBIKEAPP_DATALOADER_STATION_URL: 'e2e/stations.csv'
           CITYBIKEAPP_DATALOADER_JOURNEY_URLS: 'e2e/journeys.csv'
-        run: gradlew run --args="dataloader"
-      - name: Cypress tests
-        working-directory: e2e
+        run: ./gradlew run --args="dataloader"
+      - name: Start backend in background
+        working-directory: citybikeapp-backend
+        run: ./gradlew run &
+      - name: Start frontend devserver in background
+        working-directory: citybikeapp-frontend
+        run: npm run start &
+      - name: Cypress tests # does install and apparently some caching as well
         uses: cypress-io/github-action@v5
         with:
           command: npm run test:e2e
           working-directory: e2e
-          start: | 
-            cd citybikeapp-backend && ./gradlew run
-            cd citybikeapp-frontend && npm start
-          wait-on: 'http://localhost:3003, http://localhost:8080'
+          wait-on: 'http://localhost:3003, http://localhost:8080/health'
