@@ -3,8 +3,12 @@ package com.mtuomiko.citybikeapp.api.model
 import io.micronaut.serde.annotation.Serdeable
 
 @Serdeable
-data class StationDetailsWithStatisticsResponse(
-    val station: APIStationDetails,
+data class StationDetailsResponse(
+    val station: APIStationDetails
+)
+
+@Serdeable
+data class StatisticsResponse(
     val statistics: APIStationStatistics
 )
 

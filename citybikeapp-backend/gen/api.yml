@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: City Bike App API
-  version: 0.0.9a
+  version: 0.0.10a
 paths:
   /health:
     get:
@@ -70,7 +70,8 @@ paths:
         description: "Cursor to fetch the next page. Can expose some implementation\
           \ details, such as the values used in keyset pagination, but should be treated\
           \ as an opaque string. Don't change other query parameters (except pageSize)\
-          \ when providing the cursor in order to receive a meaningful response."
+          \ when providing the cursor in order to receive a meaningful response, meaning\
+          \ the cursor is only valid for the same set of parameters."
         schema:
           type: string
       responses:
@@ -143,11 +144,8 @@ paths:
     get:
       tags:
       - station
-      summary: Get single station information with statistics
-      description: Single station information including journey statistics. Statistics
-        are filtered using the optional query parameters. Note that malformed query
-        parameters do not result in failure.
-      operationId: getStationWithStatistics
+      summary: Get single station detailed information
+      operationId: getStationDetails
       parameters:
       - name: id
         in: path
@@ -156,29 +154,58 @@ paths:
         schema:
           type: integer
           format: int32
-      - name: fromDate
-        in: query
-        description: Earliest journey date to include in station statistics
-        schema:
-          type: string
-          format: date
-          nullable: true
-        example: 2021-06-15
-      - name: toDate
-        in: query
-        description: Latest journey date to include in station statistics
-        schema:
-          type: string
-          format: date
-          nullable: true
-        example: 2021-07-02
       responses:
         "200":
-          description: getStationWithStatistics 200 response
+          description: getStationDetails 200 response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StationDetailsWithStatisticsResponse'
+                $ref: '#/components/schemas/StationDetailsResponse'
+  /station/{id}/statistics:
+    get:
+      tags:
+      - station
+      summary: Get statistics for a single station
+      description: "Statistics are filtered using the optional query parameters. Note\
+        \ that malformed query parameters do not result in failure. Journey is included\
+        \ in statistics if its departure timestamp is between the from and to parameters.\
+        \ Timestamps must be without timezone or UTC designator (Z).They are interpreted\
+        \ in local Helsinki time internally. Example: if you want journey statistics\
+        \ until end of June 2022, use format 2022-06-30T23:59:59"
+      operationId: getStationStatistics
+      parameters:
+      - name: id
+        in: path
+        description: Station ID
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: from
+        in: query
+        description: Earliest moment in time to include in statistics. Timestamp without
+          timezone. Will be interpreted as local Helsinki time internally.
+        schema:
+          type: string
+          format: timestamp without time zone
+          nullable: true
+          example: 2023-01-29T13:47:51
+      - name: to
+        in: query
+        description: Latest moment in time to include in statistics. Timestamp without
+          timezone. Will be interpreted as local Helsinki time internally.
+        schema:
+          type: string
+          format: timestamp without time zone
+          nullable: true
+          example: 2023-01-29T13:47:51
+      responses:
+        "200":
+          description: getStationStatistics 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsResponse'
 components:
   schemas:
     CursorMeta:
@@ -347,16 +374,13 @@ components:
         latitude:
           type: number
           format: double
-    StationDetailsWithStatisticsResponse:
+    StationDetailsResponse:
       required:
       - station
-      - statistics
       type: object
       properties:
         station:
           $ref: '#/components/schemas/StationDetails'
-        statistics:
-          $ref: '#/components/schemas/StationStatistics'
     StationLimited:
       required:
       - id
@@ -435,6 +459,13 @@ components:
             $ref: '#/components/schemas/Station'
         meta:
           $ref: '#/components/schemas/Meta'
+    StatisticsResponse:
+      required:
+      - statistics
+      type: object
+      properties:
+        statistics:
+          $ref: '#/components/schemas/StationStatistics'
     TopStation:
       required:
       - id

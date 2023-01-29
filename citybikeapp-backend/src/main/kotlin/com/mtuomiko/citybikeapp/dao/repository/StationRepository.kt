@@ -20,6 +20,7 @@ import org.jooq.impl.DSL.table
 import java.time.Instant
 import java.time.InstantSource
 
+@Suppress("TooManyFunctions") // Repository class, I'm okay with this
 @Singleton
 class StationRepository(
     private val ctx: DSLContext,
@@ -43,6 +44,8 @@ class StationRepository(
     }
 
     fun findById(id: Int): StationEntity? = ctx.selectFrom(STATION).where(STATION.ID.eq(id)).fetchOne()?.toEntity()
+
+    fun existsById(id: Int): Boolean = ctx.fetchExists(ctx.selectOne().from(STATION).where(STATION.ID.eq(id)))
 
     fun getAllStationIds(): List<Int> = with(STATION) {
         ctx.select(ID).from(STATION).fetch().getValues(ID).map { it!! }
@@ -118,7 +121,7 @@ class StationRepository(
     /**
      * trgm_ops (gin/gist) indexing (for speeding up regex matching) is not setup as of V002 of migrations, since the
      * amount of station rows is in practice fairly small and planner will not use the index. Also, said indexing cannot
-     * not be used for keyset pagination as match count depends on the search pattern.
+     * not be used for pagination as match count depends on the search pattern.
      */
     fun searchUsingRegex(pattern: String, limit: Int, offset: Int): List<StationSearchResult> {
         val matchCount = count().`as`("match_count")

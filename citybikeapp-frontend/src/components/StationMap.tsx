@@ -1,5 +1,5 @@
 import React from "react";
-import { AspectRatio, Box } from "@chakra-ui/react";
+import { AspectRatio } from "@chakra-ui/react";
 import { StationDetails } from "generated";
 
 /**
@@ -25,14 +25,12 @@ const StationMap = ({ stationDetails }: { stationDetails: StationDetails }) => {
   const mapSource = encodeURI(`${osmUrlPrefix}${boundingBoxString}&marker=${latitude},${longitude}`);
 
   return (
-    <Box m="2">
-      <AspectRatio ratio={aspectRatio} maxWidth="500px">
-        <iframe
-          src={mapSource}
-          style={{ border: "1px solid black" }}
-        ></iframe>
-      </AspectRatio>
-    </Box>
+    <AspectRatio ratio={aspectRatio} width="500px">
+      <iframe
+        src={mapSource}
+        style={{ border: "1px solid black" }}
+      ></iframe>
+    </AspectRatio>
   );
 };
 

@@ -1,6 +1,5 @@
 package com.mtuomiko.citybikeapp.svc
 
-import com.mtuomiko.citybikeapp.common.TIMEZONE
 import com.mtuomiko.citybikeapp.common.model.CursorWith
 import com.mtuomiko.citybikeapp.common.model.Journey
 import com.mtuomiko.citybikeapp.common.model.PaginationKeyset
@@ -12,7 +11,6 @@ import io.micronaut.core.beans.BeanProperty
 import jakarta.inject.Singleton
 import java.security.InvalidParameterException
 import java.time.Instant
-import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
 
 const val DEFAULT_ORDER = "departureAt"
@@ -47,6 +45,11 @@ class JourneyService(
         return CursorWith(content = resultJourneys, cursor = nextCursor)
     }
 
+    /**
+     * @param cursor Custom keyset pagination cursor as a String in format **value|id** where *value* is the primary
+     * orderBy value to paginate by, and *id* is the id to paginate by (the implicit secondary orderBy).
+     * @param type Which class the cursor (primary orderBy value) should be deserialized to
+     */
     private fun <T> extractKeyset(cursor: String, type: Class<T>): PaginationKeyset<T, Long> {
         val tokens = cursor.split('|')
         if (tokens.size != 2 || tokens[0].isEmpty() || tokens[1].isEmpty()) {
@@ -62,7 +65,7 @@ class JourneyService(
     @Suppress("UNCHECKED_CAST")
     private fun <T> convertToTypedValue(value: String, type: Class<T>): T = when (type) {
         Instant::class.java -> try {
-            ZonedDateTime.parse(value).toInstant()
+            value.toLongOrNull()?.let { Instant.ofEpochSecond(it) }
         } catch (e: DateTimeParseException) {
             null
         }
@@ -77,11 +80,11 @@ class JourneyService(
         val value = orderByProperty.get(element)
         val valueString = convertToString(value, orderByProperty.type)
         val idString = element.id.toString()
-        return "$valueString|$idString"
+        return "$valueString|$idString" // custom keyset/cursor format, could encode if needed
     }
 
     private fun <T> convertToString(value: T, type: Class<T>): String = when (type) {
-        Instant::class.java -> ZonedDateTime.ofInstant((value as Instant), TIMEZONE).toString()
+        Instant::class.java -> (value as Instant).epochSecond.toString()
         Long::class.java, Int::class.java -> value.toString()
 
         else -> null

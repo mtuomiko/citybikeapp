@@ -1,18 +1,9 @@
 import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { Link as ReactRouterLink } from "react-router-dom";
-import { TableContainer, Table, Thead, Tr, Th, Tbody, Td, Link, Button, Box, Input } from "@chakra-ui/react";
+import { TableContainer, Table, Text, Thead, Tr, Th, Tbody, Td, Link, Button, Box, Input, HStack } from "@chakra-ui/react";
 import debounce from "lodash/debounce";
 import { Station } from "generated";
 import stationService from "service/station";
-
-// const headers: Header[] = [
-//   { displayTitle: "Name", orderBy: "departureAt" },
-//   { displayTitle: "Street address", orderBy: "arrivalAt" },
-//   { displayTitle: "Departure station" },
-//   { displayTitle: "Arrival station" },
-//   { displayTitle: "Distance (km)", orderBy: "distance" },
-//   { displayTitle: "Duration (min)", orderBy: "duration" },
-// ];
 
 const StationList = () => {
   const [parameters, setParameters] = useState<{
@@ -22,9 +13,6 @@ const StationList = () => {
     search: "",
     page: 0
   });
-  // const [page, setPage] = useState(0);
-  // const [search, setSearch] = useState("");
-  // const [debouncedSearch] = useDebounce(search, 1000);
   const [stations, setStations] = useState<Station[]>([]);
   const [moreAvailable, setMoreAvailable] = useState(false);
 
@@ -67,11 +55,14 @@ const StationList = () => {
 
   return (
     <Box m="2">
-      <Input
-        placeholder="Search stations based on name or address"
-        onChange={debouncedHandleSearchChange}
-      >
-      </Input>
+      <HStack>
+        <Text>Search</Text>
+        <Input
+          placeholder="Search stations based on name or address"
+          onChange={debouncedHandleSearchChange}
+        >
+        </Input>
+      </HStack>
       <TableContainer>
         <Table>
           <Thead>

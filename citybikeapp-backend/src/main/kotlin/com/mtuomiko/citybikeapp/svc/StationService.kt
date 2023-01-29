@@ -11,8 +11,8 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
-import java.time.LocalDate
-import java.time.LocalTime
+import java.time.Instant
+import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
 
@@ -24,17 +24,23 @@ class StationService(
 ) {
     fun getStationById(stationId: Int) = stationDao.getStationById(stationId)
 
+    fun stationExists(stationId: Int) = stationDao.stationExists(stationId)
+
     fun getAllStationsLimited() = stationDao.getAllStationsLimited()
 
     fun getStations(searchTokens: List<String>, page: Int?, pageSize: Int?): TotalPagesWith<List<Station>> {
         return stationDao.getStations(searchTokens, page ?: 0, paginationConfig.getMaxLimitedPageSize(pageSize))
     }
 
-    fun getStationStatistics(stationId: Int, fromDate: LocalDate?, toDate: LocalDate?): StationStatistics {
+    fun getStationStatistics(stationId: Int, from: LocalDateTime?, to: LocalDateTime?): StationStatistics {
         // Interpret query dates to be in local Helsinki time
-        val from = fromDate?.atStartOfDay(TIMEZONE)?.toInstant()
-        val to = toDate?.atTime(LocalTime.MAX)?.atZone(TIMEZONE)?.toInstant()
+        val fromInstant = from?.atZone(TIMEZONE)?.toInstant()
+        val toInstant = to?.atZone(TIMEZONE)?.toInstant()
 
+        return getStationStatistics(stationId, fromInstant, toInstant)
+    }
+
+    private fun getStationStatistics(stationId: Int, from: Instant?, to: Instant?): StationStatistics {
         return runBlocking {
             val deferredStatistics = async { statisticsDao.getJourneyStatisticsByStationId(stationId, from, to) }
             val deferredTopStationsResult = async { statisticsDao.getTopStationsByStationId(stationId, from, to) }
