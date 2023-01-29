@@ -18,7 +18,7 @@ const App = () => {
   }, []);
 
   return (
-    <Box maxW={{ xl: "1200px" }} m="0 auto">
+    <Box maxW={{ xl: "1300px" }} m="0 auto">
       <Navbar isMobileOpen={isOpen} onToggle={onToggle} />
       <Outlet />
     </Box>

@@ -28,7 +28,7 @@ const StationDetailsView = () => {
     <Flex justify={"space-between"} flexWrap={"wrap"}>
       <Box>
         <Heading as="h5" size="xs">Station name</Heading>
-        <HStack>
+        <HStack data-cy="station-names-container">
           <Box>
             <Heading size="xs">Finnish</Heading>
             <Text>{details.nameFinnish}</Text>

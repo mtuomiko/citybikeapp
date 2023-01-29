@@ -1,0 +1,82 @@
+name: Main verification pipeline
+
+on:
+  push:
+    paths-ignore: ['docker/**']
+    branches: [master]
+  pull_request:
+    paths-ignore: ['docker/**']
+    branches: [master]
+    types: [opened, synchronize]
+
+jobs:
+  verification:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_CONNECTION_URL: jdbc:postgresql://localhost:5432/citybikeapp
+      DATABASE_CONNECTION_USERNAME: postgres
+      DATABASE_CONNECTION_PASSWORD: Hunter2
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: ${{ env.DATABASE_CONNECTION_PASSWORD }}
+          POSTGRES_DB: citybikeapp
+          PGUSER: postgres # health check uses machine OS user otherwise
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      # Frontend first since it (potentially) fails faster
+
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: "Frontend: install, generate, lint, build"
+        working-directory: citybikeapp-frontend
+        run: |
+          npm ci 
+          npm run client-gen
+          npm run lint
+          npm run build
+      
+      # Backend
+
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Setup Gradle # use caching for Gradle
+        working-directory: citybikeapp-backend
+        uses: gradle/gradle-build-action@v2
+        with:
+          build-root-directory: citybikeapp-backend
+      - name: Gradle build # will run test & check tasks also
+        working-directory: citybikeapp-backend
+        run: ./gradlew clean build jacocoTestCoverageVerification # feeble attempt to keep test coverage up
+
+      # E2E
+
+      - name: Insert basic E2E test data using dataloader
+        working-directory: citybikeapp-backend
+        env:
+          MICRONAUT_ENVIRONMENTS: e2e
+          CITYBIKEAPP_DATALOADER_STATION_URL: 'e2e/stations.csv'
+          CITYBIKEAPP_DATALOADER_JOURNEY_URLS: 'e2e/journeys.csv'
+        run: gradlew run --args="dataloader"
+      - name: Cypress tests
+        working-directory: e2e
+        uses: cypress-io/github-action@v5
+        with:
+          command: npm run test:e2e
+          working-directory: e2e
+          start: | 
+            cd citybikeapp-backend && ./gradlew run
+            cd citybikeapp-frontend && npm start
+          wait-on: 'http://localhost:3003, http://localhost:8080'

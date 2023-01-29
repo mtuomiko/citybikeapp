@@ -1,5 +1,6 @@
 package com.mtuomiko.citybikeapp
 
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import mu.KotlinLogging
 import java.io.InputStream
@@ -14,6 +15,7 @@ private val logger = KotlinLogging.logger {}
 private const val DOWNLOAD_DIR = "temp"
 
 @Singleton
+@Requires(notEnv = ["e2e"])
 class DownloadingFileProvider : FileProvider {
     private val directoryPath = Path.of(DOWNLOAD_DIR)
     private val filePathList = mutableListOf<Path>()
