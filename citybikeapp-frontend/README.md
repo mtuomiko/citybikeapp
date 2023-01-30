@@ -5,7 +5,7 @@
 * Main library: React
 * Language: TypeScript
 * Tooling: Nothing, manual setup just for practice. For a real world project, something like CRA or Vite would probably 
-make more sense.
+  make more sense.
 * Build: Webpack with ts-loader
 * State: Manual using React, considered Redux but seemed like a heavyweight option for this.
 * Code quality / static analysis: ESLint
@@ -20,8 +20,9 @@ Requirements
 Running locally in dev mode
 * Install dependencies `npm ci --include=dev`
 * Generate API client `npm run client-gen`
-* Start `npm start`
-* Frontend served at [http://localhost:3003](http://localhost:3003)
+* Start dev-server `npm start`
+* Frontend served at [http://localhost:3003](http://localhost:3003) and it will by default 
+  expect [backend](../citybikeapp-backend/) to be available at `http://localhost:8080`
 
 ## API client generation
 
@@ -30,8 +31,8 @@ a `typescript-axios` client that contains all the backend API responses and thei
 to the backend OpenAPI specification file. In this monorepo, we can it access directly from backend directory during 
 development.
 
-In image build process (see [Dockerfile.frontend](../docker/Dockerfile.frontend)), the code is generated using a 
-separate `openapitools/openapi-generator-cli` image.
+In image build process for local docker-compose setup (see [Dockerfile.frontend](../docker/Dockerfile.frontend)), the 
+code is generated using a separate `openapitools/openapi-generator-cli` image.
 
 ## NPM commands
 

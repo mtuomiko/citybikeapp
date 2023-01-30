@@ -20,21 +20,26 @@ under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) as of 2nd Januar
 Requirements
 
 * Java JDK 17
-* Docker host (for jOOQ code generation that runs against a temporary PostgreSQL container). podman might work
+* Docker host (for jOOQ code generation that runs against a temporary PostgreSQL container). `podman` might work
 * PostgreSQL 14 database access (when running)
 
 #### Running locally
 
-Use the correct Gradle wrapper for your environment: `gradlew.bat` for Windows, `gradlew`
-otherwise.
+Use the correct Gradle wrapper for your environment: `gradlew.bat` for Windows, `gradlew` otherwise.
 
 * App assumes an existing PostgreSQL 14 instance to be available at `postgresql://host.docker.internal:5432/citybikeapp`
   with credentials `postgres:Hunter2`. Run one for example with docker
   using `docker run -d --restart --name dev-postgres -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_DB=citybikeapp -e POSTGRES_PASSWORD=Hunter2 postgres:14`
 * Run dataloading using Gradle task `run` with `dataloader` argument, for example
   with `./gradlew run --args "dataloader"`
+  * If you need to use a different DB configuration, see [Environment variables](#environment-variables).
+  * You could, for example, explicitly use `localhost` (`host.docker.internal` should be equivalent) by using 
+    `DATABASE_CONNECTION_URL=jdbc:postgresql://localhost:5432/citybikeapp ./gradlew run --args "dataloader"`. Windows 
+    terminals need some additional wizardry to set env vars.
 * Run application using Gradle task `run`, for example with `./gradlew run`
 * Application API will be available under http://localhost:8080/
+  * See [api.yml](gen/api.yml) or [https://mtuomiko.github.io/citybikeapp/](https://mtuomiko.github.io/citybikeapp/) for
+    available endpoints
 
 ## Data loader
 
@@ -52,6 +57,15 @@ column unique constraint/index, a bit doubtful about this... (temp table on inse
 
 Example for running data loader: `./gradlew run --args "dataloader"`
 
+## Code generation and API generation
+
+Backend DAO layer implementation depends on jOOQ codegeneration (data about tables and columns and so on). It needs 
+some schema to use for generation and here the schema is being formed in a temporary PostgreSQL testcontainer by running
+Flyway migrations on it. Meaning the build doesn't depend on an already existing DB, but a docker host is required.
+
+API specifications are being generated in [gen/api.yml](gen/api.yml) based on the controllers and API response classes.
+The spec isn't too pretty, API-first approach would probably be nicer and result in more coherent spec file.
+
 ## Environment variables
 
 This table describes relevant variables when running the application in production mode. Micronaut allows property
@@ -60,7 +74,7 @@ overriding using environment variables (like Spring does) but these are explicit
 #### Common
 
 | Environment variable            | Description                                                  | Default                                                   | Required | Example                                      |
-|---------------------------------|--------------------------------------------------------------|-----------------------------------------------------------|----------|----------------------------------------------|
+| ------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------- | -------- | -------------------------------------------- |
 | `PORT`                          | Server port                                                  | `8080`                                                    |          |                                              |
 | `DATABASE_CONNECTION_URL`       | JDBC connection URL                                          | `jdbc:postgresql://host.docker.internal:5432/citybikeapp` |          | `jdbc:postgresql://foo.bar:5432/citybikeapp` |
 | `DATABASE_CONNECTION_USERNAME`  | DB username                                                  | `postgres`                                                |          | `foo`                                        |
@@ -71,7 +85,7 @@ overriding using environment variables (like Spring does) but these are explicit
 #### Data loader specific environment variables
 
 | Environment variable                  | Description                                             | Default                 | Example                                                   |
-|---------------------------------------|---------------------------------------------------------|-------------------------|-----------------------------------------------------------|
+| ------------------------------------- | ------------------------------------------------------- | ----------------------- | --------------------------------------------------------- |
 | `CITYBIKEAPP_DATALOADER_MIN_DISTANCE` | Minimum filter on journey length (meters)               | `10`                    |                                                           |
 | `CITYBIKEAPP_DATALOADER_MIN_DURATION` | Minimum filter on journey duration (seconds)            | `10`                    |                                                           |
 | `CITYBIKEAPP_DATALOADER_BATCH_SIZE`   | Database batch size for inserts                         | `1000`                  |                                                           |

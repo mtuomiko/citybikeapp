@@ -1,68 +1,34 @@
 # City Bike App
 
-This is a monorepository for implementing the [pre-assignment for Solita Dev Academy Finland 2023](https://github.com/solita/dev-academy-2023-exercise).
+This is a monorepository for implementing the [pre-assignment for Solita Dev Academy Finland 2023](https://github.com/solita/dev-academy-2023-exercise),
+a web application for displaying data about rental bike journeys in Helsinki. 
 
-## Quick start
+Note that application can be used to automatically fetch and load data that is owned by City Bike Finland (journey data)
+and Helsingin seudun liikenne (HSL) (station data). Data is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) as of 2nd January 2023.
 
-This quick start requires Java JDK 17, a Docker host, Docker Compose and local port `8080` to be available on the host 
-machine. You can also run [frontend](citybikeapp-frontend/) and [backend](citybikeapp-backend/) individually.
+## Running the application
 
-1. Build backend and generate its Dockerfile. Select Gradle wrapper depending on the host OS: `gradlew.bat` file for 
-   Windows, otherwise use `gradlew` file like in the example below.
-    * Run `./citybikeapp-backend/gradlew -p ./citybikeapp-backend buildLayers dockerfile` at project root
-1. Run the local docker-compose setup.
-    * Run `docker compose -f docker-compose.local.yml --env-file .env.local --profile dataloader up` at project root
+If you just want to run the whole application, see Docker Compose instructions below. Otherwise 
+see [citybikeapp-frontend](citybikeapp-frontend/) and [citybikeapp-backend](citybikeapp-backend/) folders for more info.
+
+### With Docker Compose
+
+This requires Java JDK 17, a Docker host, Docker Compose and local port `8080` to be available on the host machine.
+You can change the port in [docker-compose.local.yml](docker-compose.local.yml).
+
+1. Build backend and generate its Dockerfile.
+    * Windows: run `.\citybikeapp-backend\gradlew.bat -p .\citybikeapp-backend\ buildLayers dockerfile` at project root
+    * Other: run `./citybikeapp-backend/gradlew -p ./citybikeapp-backend buildLayers dockerfile` at project root
+2. Run the local docker-compose setup.
+    * Run `docker compose -f docker-compose.local.yml --env-file docker/.env.local --profile dataloader up` at project 
+      root
     * Wait for the station and journey data loading to complete, or don't, the application should be available before 
       the loading completes.
-1. City Bike App is found at [http://localhost:8080](http://localhost:8080)
+3. City Bike App is found at [http://localhost:8080](http://localhost:8080) 
 
 You can pull down the compose setup with `docker-compose -f docker-compose.local.yml down`
 
-## Description
-
-This is the pre-assignment for Solita Dev Academy Finland 2023. But if you’re here just purely out of curiosity, feel free to snatch the idea and make your own city bike app just for the fun of it!
-
-Let's imagine that you have received an interesting project offer to create a UI and a backend service for displaying data from journeys made with city bikes in the Helsinki Capital area.
-
-For the exercise download three datasets of journey data. The data is owned by City Bike Finland.
-
-* <https://dev.hsl.fi/citybikes/od-trips-2021/2021-05.csv>
-* <https://dev.hsl.fi/citybikes/od-trips-2021/2021-06.csv>
-* <https://dev.hsl.fi/citybikes/od-trips-2021/2021-07.csv>
-
-Also, there is a dataset that has information about Helsinki Region Transport’s (HSL) city bicycle stations.
-
-* Dataset: <https://opendata.arcgis.com/datasets/726277c507ef4914b0aec3cbcfcbfafc_0.csv>
-* License and information: <https://www.avoindata.fi/data/en/dataset/hsl-n-kaupunkipyoraasemat/resource/a23eef3a-cc40-4608-8aa2-c730d17e8902>
-
-## The exercise
-
-Create a web application that uses a backend service to fetch the data.
-Backend can be made with any technology. We at Solita use for example (not in preference order) Java/Kotlin/Clojure/C#/TypeScript/Go but you are free to choose any other technology as well.
-
-Backend can use a database, or it can be memory-based. Real database use is a preferable choice because it allows you to show broader skills. Also, the datasets are quite big so in-memory operations may be quite slow.
-
-You can also freely choose the frontend (and possibly mobile frontend) technologies to use. The important part is to give good instructions on how to build and run the project.
-
-## Stuff to do
-
-**Important!** Implementing all of the proposed features is not needed for a good exercise result. You may also concentrate on:
-
-* Good documentation (readme/other docs)
-* Proper git usage (small commits, informative commit messages)
-* Tests
-* Getting features complete
-* Writing good code
-
-Which are all highly valued in a good repository.
-
-You can read more about tips from Solita Dev Blog: [Do's and Dont's of Dev Academy Pre-assignments](https://dev.solita.fi/2021/11/04/how-to-pre-assignments.html)
-
-Also you can read Solita Dev Blog: [Testing Primer](https://dev.solita.fi/2022/11/01/testing-primer-dev-academy.html)
-
 ## Functional requirements
-
-Focus on the recommended features. For extra points, you might want to also complete some additional features. You can also come up with extra features, if you do, please document them in the readme!
 
 ### Data import
 
@@ -78,7 +44,6 @@ Focus on the recommended features. For extra points, you might want to also comp
 #### Recommended
 
 * List journeys ✅
-    * If you don't implement pagination, use some hard-coded limit for the list length because showing several million rows would make any browser choke
 * For each journey show departure and return stations, covered distance in kilometers and duration in minutes ✅
 
 #### Additional
@@ -114,21 +79,20 @@ Focus on the recommended features. For extra points, you might want to also comp
 * The average distance of a journey ending at the station ✅
 * Top 5 most popular return stations for journeys starting from the station ✅
 * Top 5 most popular departure stations for journeys ending at the station ✅
-* Ability to filter all the calculations per month
+* Ability to filter all the calculations per month ✅
 
 ## Surprise us with
 
 * Endpoints to store new journeys data or new bicycle stations
-* Running backend in Docker
+* Running backend in Docker ✅
+  * With docker-compose setup
 * Running backend in Cloud
-* Implement E2E tests
+* Implement E2E tests ✅
+  * Limited tests (see [e2e folder](e2e/)) but the setup exists and is being used on Github Actions. Gives some 
+    guarantee that not everything is broken.
 * Create UI for adding journeys or bicycle stations
 
 ## Extra features
 
 * Pipeline generated Swagger docs available at [https://mtuomiko.github.io/citybikeapp/](https://mtuomiko.github.io/citybikeapp/)
 * API client generation for frontend using openapi-generator
-
-## Returning the exercise
-
-If you wish to apply to Dev Academy, make sure to add the link to your GitHub repository to the application.

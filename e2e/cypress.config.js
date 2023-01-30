@@ -5,6 +5,8 @@ module.exports = defineConfig({
     setupNodeEvents(on, config) {
       return config
     },
-    baseUrl: `http://localhost:${process.env.PORT || 3003}`
+    baseUrl: `http://localhost:${process.env.PORT || 3003}`,
+    screenshotOnRunFailure: false,
+    video: false,
   },
 });
