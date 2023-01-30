@@ -4,42 +4,54 @@ Note that application can be used to automatically fetch and load data that is o
 and Helsingin seudun liikenne (HSL) (station data). Data is licensed
 under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) as of 2nd January 2023.
 
-## Used technologies
-
-* Framework: Micronaut
-* Build/tooling: Gradle
-* Language: Kotlin
-* Database: PostgreSQL
-* DB access: jOOQ
-* Migrations: Flyway
-* Code quality / static analysis: detekt, Spotless
-* Test coverage: JaCoCo
-
 ## Getting started
 
-Requirements
+Application uses a Gradle Wrapper to provide a consistent Gradle version. All actions / tasks are invoked through the
+wrapper script file which is `gradlew.bat` for Windows, `gradlew` otherwise.
+
+### Requirements
 
 * Java JDK 17
-* Docker host (for jOOQ code generation that runs against a temporary PostgreSQL container). `podman` might work
+    * For example, use [Eclipse Temurin](https://adoptium.net/temurin/releases/)
+* Docker host (for tests and jOOQ code generation that runs against a temporary PostgreSQL testcontainer). Podman might
+  work also.
+    * See [http://www.docker.com](https://www.docker.com/). Docker Desktop is not free for businesses.
+    * (or [https://podman.io/](https://podman.io/))
 * PostgreSQL 14 database access (when running)
 
-#### Running locally
-
-Use the correct Gradle wrapper for your environment: `gradlew.bat` for Windows, `gradlew` otherwise.
+### Running locally
 
 * App assumes an existing PostgreSQL 14 instance to be available at `postgresql://host.docker.internal:5432/citybikeapp`
-  with credentials `postgres:Hunter2`. Run one for example with docker
+  with credentials `postgres:Hunter2`.
+
+  Run one for example with docker
   using `docker run -d --restart --name dev-postgres -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_DB=citybikeapp -e POSTGRES_PASSWORD=Hunter2 postgres:14`
 * Run dataloading using Gradle task `run` with `dataloader` argument, for example
   with `./gradlew run --args "dataloader"`
-  * If you need to use a different DB configuration, see [Environment variables](#environment-variables).
-  * You could, for example, explicitly use `localhost` (`host.docker.internal` should be equivalent) by using 
-    `DATABASE_CONNECTION_URL=jdbc:postgresql://localhost:5432/citybikeapp ./gradlew run --args "dataloader"`. Windows 
-    terminals need some additional wizardry to set env vars.
+    * If you need to use a different DB configuration, see [Environment variables](#environment-variables).
+    * You could, for example, explicitly use `localhost` (default `host.docker.internal` should be equivalent) by using
+      `DATABASE_CONNECTION_URL=jdbc:postgresql://localhost:5432/citybikeapp ./gradlew run --args "dataloader"`.
+        * Windows terminals need some additional wizardry to set env vars: `SET FOO=bar` or `$env:FOO='bar'`
 * Run application using Gradle task `run`, for example with `./gradlew run`
 * Application API will be available under http://localhost:8080/
-  * See [api.yml](gen/api.yml) or [https://mtuomiko.github.io/citybikeapp/](https://mtuomiko.github.io/citybikeapp/) for
-    available endpoints
+    * See [api.yml](gen/api.yml) or [https://mtuomiko.github.io/citybikeapp/](https://mtuomiko.github.io/citybikeapp/)
+      for available endpoints
+
+### Gradle tasks
+
+Few relevant Gradle tasks. Run using the Gradle wrapper. For example, `./gradlew build`
+
+* `build` check everything and compile
+* `clean` clear anything that Gradle has created in the project. Use for example with build if something seems to be
+  fubar: `clean build`
+* `generateJooq` run jOOQ code generation explicitly. Created code is located at `build/generated-src/jooq`
+* `check` run verification tasks
+    * `detekt` run detekt Kotlin static code analysis
+    * `spotlessCheck` run spotless code style checks
+        * `spotlessApply` to autofix
+    * `test` run all tests
+* `jacocoTestReport` create jacoco test coverage report to `build/reports/jacoco`
+* `dockerfile` to generate a layered Dockerfile to `build/docker/main`
 
 ## Data loader
 
@@ -59,7 +71,7 @@ Example for running data loader: `./gradlew run --args "dataloader"`
 
 ## Code generation and API generation
 
-Backend DAO layer implementation depends on jOOQ codegeneration (data about tables and columns and so on). It needs 
+Backend DAO layer implementation depends on jOOQ codegeneration (data about tables and columns and so on). It needs
 some schema to use for generation and here the schema is being formed in a temporary PostgreSQL testcontainer by running
 Flyway migrations on it. Meaning the build doesn't depend on an already existing DB, but a docker host is required.
 
@@ -74,7 +86,7 @@ overriding using environment variables (like Spring does) but these are explicit
 #### Common
 
 | Environment variable            | Description                                                  | Default                                                   | Required | Example                                      |
-| ------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------- | -------- | -------------------------------------------- |
+|---------------------------------|--------------------------------------------------------------|-----------------------------------------------------------|----------|----------------------------------------------|
 | `PORT`                          | Server port                                                  | `8080`                                                    |          |                                              |
 | `DATABASE_CONNECTION_URL`       | JDBC connection URL                                          | `jdbc:postgresql://host.docker.internal:5432/citybikeapp` |          | `jdbc:postgresql://foo.bar:5432/citybikeapp` |
 | `DATABASE_CONNECTION_USERNAME`  | DB username                                                  | `postgres`                                                |          | `foo`                                        |
@@ -85,7 +97,7 @@ overriding using environment variables (like Spring does) but these are explicit
 #### Data loader specific environment variables
 
 | Environment variable                  | Description                                             | Default                 | Example                                                   |
-| ------------------------------------- | ------------------------------------------------------- | ----------------------- | --------------------------------------------------------- |
+|---------------------------------------|---------------------------------------------------------|-------------------------|-----------------------------------------------------------|
 | `CITYBIKEAPP_DATALOADER_MIN_DISTANCE` | Minimum filter on journey length (meters)               | `10`                    |                                                           |
 | `CITYBIKEAPP_DATALOADER_MIN_DURATION` | Minimum filter on journey duration (seconds)            | `10`                    |                                                           |
 | `CITYBIKEAPP_DATALOADER_BATCH_SIZE`   | Database batch size for inserts                         | `1000`                  |                                                           |
@@ -95,6 +107,24 @@ overriding using environment variables (like Spring does) but these are explicit
 <a id="default_station"></a>[1] `https://opendata.arcgis.com/datasets/726277c507ef4914b0aec3cbcfcbfafc_0.csv`
 
 <a id="default_journey"></a>[2] `https://dev.hsl.fi/citybikes/od-trips-2021/2021-05.csv,https://dev.hsl.fi/citybikes/od-trips-2021/2021-06.csv,https://dev.hsl.fi/citybikes/od-trips-2021/2021-07.csv`
+
+## Used technologies
+
+* Framework: Micronaut
+    * Wanted to see how these new AOT focused frameworks do. Original inspiration came from when I was running a
+      different project's Spring Boot backend on a free deployment at Render.com, and it took 5 minutes to start the
+      container. Obviously the free tier had very limited resources but still.
+* Build/tooling: Gradle
+    * Mostly familiar with this one vs maven
+* Language: Kotlin
+    * I just like it :)
+* Database: PostgreSQL
+* DB access: jOOQ
+    * Allowed writing the statistic queries in a somewhat reasonable manner: Jdbi seemed too manual and JPA/Hibernate an
+      overkill
+* Migrations: Flyway
+* Code quality / static analysis: detekt, Spotless
+* Test coverage: JaCoCo
 
 ## TODOs
 

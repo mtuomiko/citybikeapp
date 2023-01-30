@@ -8,7 +8,7 @@ describe("Journey listing", () => {
     cy.get("[data-cy=journey-list-table-body]").find("tr").its("length").should("be.gt", 0)
   });
 
-  it("first journey's departure station link can be clicked and URL changes", () => {
+  it("first journey's departure station link can be clicked and page changes", () => {
     cy.get("[data-cy=journey-list-table-body]").find("tr").first().find("a").first().then(($departureAnchor) => {
       const title = $departureAnchor.text();
       const href = $departureAnchor.attr("href");
@@ -19,7 +19,7 @@ describe("Journey listing", () => {
     });
   });
 
-  it("first journey's arrival station link can be clicked and URL changes", () => {
+  it("first journey's arrival station link can be clicked and page changes", () => {
     cy.get("[data-cy=journey-list-table-body]").find("tr").first().find("a").last().then(($arrivalAnchor) => {
       const title = $arrivalAnchor.text();
       const href = $arrivalAnchor.attr("href");

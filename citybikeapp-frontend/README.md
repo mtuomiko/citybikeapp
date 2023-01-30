@@ -1,16 +1,5 @@
 # City Bike App frontend
 
-## Technologies
-
-* Main library: React
-* Language: TypeScript
-* Tooling: Nothing, manual setup just for practice. For a real world project, something like CRA or Vite would probably 
-  make more sense.
-* Build: Webpack with ts-loader
-* State: Manual using React, considered Redux but seemed like a heavyweight option for this.
-* Code quality / static analysis: ESLint
-* Component library / styling: Chakra UI, using Emotion
-
 ## Getting started
 
 Requirements
@@ -50,3 +39,16 @@ You can create a `.env` file (see [`.env.example`](.env.example)) to set these i
 |----------------------|-------------------------------|----------------------------------------------------|----------|---------|
 | `DEV_PORT`           | Development server port       | `3003`                                             |          |         |
 | `API_BASE_URL`       | API url, absolute or relative | `http://localhost:8080` in dev, `/api` in prod     |          |         |
+
+## Technologies
+
+Mainly using components I'm at least somewhat familiar with.
+
+* Main library: React
+* Language: TypeScript
+* Tooling: Nothing. For a real world project, something like CRA or Vite would probably make more sense.
+* Build: Webpack with ts-loader
+* State: Manual using React, considered Redux but seemed like a heavyweight option for this.
+  * Not too much in global state ATM. Just the all stations listing with limited information (id, Finnish name).
+* Code quality / static analysis: ESLint
+* Component library / styling: Chakra UI, using Emotion
