@@ -1,7 +1,9 @@
 # City Bike App
 
-This is a monorepository for implementing the [pre-assignment for Solita Dev Academy Finland 2023](https://github.com/solita/dev-academy-2023-exercise),
-a web application for displaying data about rental bike journeys in Helsinki. 
+This is a monorepository for implementing the [pre-assignment for Solita Dev Academy Finland 2023](https://github.com/solita/dev-academy-2023-exercise).
+It contains web application for displaying data about rental bike journeys and stations in Helsinki region.
+
+See [Functionality](#functionality) for a list of original requirements and currently implemented functions.
 
 Note that application can be used to automatically fetch and load data that is owned by City Bike Finland (journey data)
 and Helsingin seudun liikenne (HSL) (station data). Data is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) as of 2nd January 2023.
@@ -28,7 +30,7 @@ You can change the port in [docker-compose.local.yml](docker-compose.local.yml).
 
 You can pull down the compose setup with `docker-compose -f docker-compose.local.yml down`
 
-## Functional requirements
+## Functionality
 
 ### Data import
 
@@ -50,8 +52,8 @@ You can pull down the compose setup with `docker-compose -f docker-compose.local
 
 * Pagination ✅
 * Ordering per column ✅
-* Searching
-* Filtering
+* ~~Searching~~ 
+* ~~Filtering~~
 
 ### Station list
 
@@ -81,18 +83,19 @@ You can pull down the compose setup with `docker-compose -f docker-compose.local
 * Top 5 most popular departure stations for journeys ending at the station ✅
 * Ability to filter all the calculations per month ✅
 
-## Surprise us with
+### Surprise us with
 
-* Endpoints to store new journeys data or new bicycle stations
+* ~~Endpoints to store new journeys data or new bicycle stations~~
 * Running backend in Docker ✅
-  * With docker-compose setup
-* Running backend in Cloud
+  * With a local docker-compose setup for whole project
+* ~~Running backend in Cloud~~
 * Implement E2E tests ✅
   * Limited tests (see [e2e folder](e2e/)) but the setup exists and is being used on Github Actions. Gives some 
     guarantee that not everything is broken.
-* Create UI for adding journeys or bicycle stations
+* ~~Create UI for adding journeys or bicycle stations~~
 
-## Extra features
+### Extra
 
-* Pipeline generated Swagger docs available at [https://mtuomiko.github.io/citybikeapp/](https://mtuomiko.github.io/citybikeapp/)
-* API client generation for frontend using openapi-generator
+* Pipeline generated Swagger docs about the backend API. Hosted by Github Pages ✅
+  * Available at [https://mtuomiko.github.io/citybikeapp/](https://mtuomiko.github.io/citybikeapp/)
+* API client generation for frontend using openapi-generator ✅
