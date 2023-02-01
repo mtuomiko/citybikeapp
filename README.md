@@ -1,7 +1,7 @@
 # City Bike App
 
 This is a monorepository for implementing the [pre-assignment for Solita Dev Academy Finland 2023](https://github.com/solita/dev-academy-2023-exercise).
-It contains web application for displaying data about rental bike journeys and stations in Helsinki region.
+It contains a React frontend & Micronaut backend based web application for displaying data about rental bike journeys and stations in Helsinki region.
 
 See [Functionality](#functionality) for a list of original requirements and currently implemented functions.
 
