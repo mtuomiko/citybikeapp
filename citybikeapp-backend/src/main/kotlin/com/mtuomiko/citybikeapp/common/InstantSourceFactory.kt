@@ -1,14 +1,14 @@
 package com.mtuomiko.citybikeapp.common
 
-import io.micronaut.context.annotation.Factory
-import jakarta.inject.Singleton
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import java.time.InstantSource
 
-@Factory
+@Configuration
 class InstantSourceFactory {
     /**
      * Common source for accessing system time. Should help testing.
      */
-    @Singleton
+    @Bean
     fun instantSource(): InstantSource = InstantSource.system()
 }

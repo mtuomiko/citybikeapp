@@ -12,7 +12,7 @@ const JourneyRow = ({ journey }: { journey: Journey }) => {
 
   const createTimeCell = (time: Date) => (
     <Td>
-      <Tooltip label={<Text fontSize={"xs"}>{time.toString()}</Text>} openDelay={1300}>
+      <Tooltip label={<Text fontSize={"xs"}>{time.toString()}</Text>} openDelay={1000}>
         {displayTime(time)}
       </Tooltip>
     </Td>

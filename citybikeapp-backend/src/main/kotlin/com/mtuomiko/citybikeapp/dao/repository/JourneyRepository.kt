@@ -7,7 +7,6 @@ import com.mtuomiko.citybikeapp.dao.model.JourneyStatistics
 import com.mtuomiko.citybikeapp.dao.model.TopStationsQueryResult
 import com.mtuomiko.citybikeapp.jooq.tables.Journey.Companion.JOURNEY
 import com.mtuomiko.citybikeapp.jooq.tables.records.JourneyRecord
-import jakarta.inject.Singleton
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.future.asDeferred
 import org.jooq.Condition
@@ -16,51 +15,55 @@ import org.jooq.Record3
 import org.jooq.SelectLimitPercentStep
 import org.jooq.impl.DSL.avg
 import org.jooq.impl.DSL.count
+import org.springframework.stereotype.Repository
 import java.security.InvalidParameterException
 import java.time.Instant
 
-@Singleton
-class JourneyRepository(private val ctx: DSLContext) {
+@Suppress("TooManyFunctions") // Repository class, I'm okay with this
+@Repository
+class JourneyRepository(
+    private val ctx: DSLContext,
+) {
     // null offset id argument position to use for fields insert of new journeys without ids
     private val nullOffsetWithoutIdFields = listOf(null) + JOURNEY.fields().filter { it != JOURNEY.ID }
     private val fieldsExcludingId = JOURNEY.fields().filter { it != JOURNEY.ID }
 
-    fun saveAll(journeys: List<JourneyEntity>): List<JourneyEntity> {
-        return journeys.map(::save)
-    }
+    fun saveAll(journeys: List<JourneyEntity>): List<JourneyEntity> = journeys.map(::save)
 
-    fun save(journey: JourneyEntity): JourneyEntity {
-        return ctx.insertInto(JOURNEY).columns(JOURNEY.fields().toList()).values(journey.toRecord()).returning()
-            .fetchOne()!!.toEntity()
-    }
+    fun save(journey: JourneyEntity): JourneyEntity =
+        ctx
+            .insertInto(JOURNEY)
+            .columns(JOURNEY.fields().toList())
+            .values(journey.toRecord())
+            .returning()
+            .fetchOne()!!
+            .toEntity()
 
-    fun saveAllNewJourneys(journeys: List<JourneyNew>): List<JourneyEntity> {
-        return journeys.map(::saveNewJourney)
-    }
+    fun saveAllNewJourneys(journeys: List<JourneyNew>): List<JourneyEntity> = journeys.map(::saveNewJourney)
 
-    fun saveNewJourney(journey: JourneyNew): JourneyEntity {
-        return ctx.insertInto(JOURNEY)
+    fun saveNewJourney(journey: JourneyNew): JourneyEntity =
+        ctx
+            .insertInto(JOURNEY)
             .columns(fieldsExcludingId)
             .values(journey.toRecord().toValuesExcludingId())
-            .returning().fetchOne()!!.toEntity()
-    }
+            .returning()
+            .fetchOne()!!
+            .toEntity()
 
+    // test usage
     fun deleteAll() {
         ctx.delete(JOURNEY).execute()
     }
 
-//    fun deleteAllById(ids: List<Int>) {
-//        ctx.delete(JOURNEY).where()
-//    }
+    fun findAll(): List<JourneyEntity> = ctx.selectFrom(JOURNEY).fetch().map { it.toEntity() }
 
-    fun findAll(): List<JourneyEntity> {
-        return ctx.selectFrom(JOURNEY).fetch().map { it.toEntity() }
-    }
+    fun getCount(): Int = ctx.fetchCount(JOURNEY)
 
     fun saveInBatchIgnoringConflicts(journeys: List<JourneyNew>) {
         val records = journeys.map { it.toRecord() }
 
-        ctx.loadInto(JOURNEY)
+        ctx
+            .loadInto(JOURNEY)
             .onDuplicateKeyIgnore()
             .batchAll()
             .loadRecords(records)
@@ -68,19 +71,24 @@ class JourneyRepository(private val ctx: DSLContext) {
             .execute()
     }
 
+    /**
+     * keyset
+     */
     fun listJourneys(
         orderBy: String,
         descending: Boolean,
         pageSize: Int,
-        keyset: PaginationKeyset<Any, Long>?
+        keyset: PaginationKeyset<out Any, Long>?,
     ): List<JourneyEntity> {
-        val orderFields = if (descending) {
-            listOf(getJourneyField(orderBy).desc(), JOURNEY.ID.desc())
-        } else {
-            listOf(getJourneyField(orderBy).asc(), JOURNEY.ID.asc())
-        }
+        val orderFields =
+            if (descending) {
+                listOf(getJourneyField(orderBy).desc(), JOURNEY.ID.desc())
+            } else {
+                listOf(getJourneyField(orderBy).asc(), JOURNEY.ID.asc())
+            }
 
-        return ctx.selectFrom(JOURNEY)
+        return ctx
+            .selectFrom(JOURNEY)
             .orderBy(orderFields)
             .apply { if (keyset != null) seek(keyset.value, keyset.id) }
             .limit(pageSize)
@@ -89,34 +97,42 @@ class JourneyRepository(private val ctx: DSLContext) {
             }
     }
 
-    private fun getJourneyField(field: String) = with(JOURNEY) {
-        when (field) {
-            "id" -> ID
-            "departureAt" -> DEPARTURE_AT
-            "arrivalAt" -> ARRIVAL_AT
-            "departureStationId" -> DEPARTURE_STATION_ID
-            "arrivalStationId" -> ARRIVAL_STATION_ID
-            "distance" -> DISTANCE
-            "duration" -> DURATION
-            else -> throw InvalidParameterException("unknown journey field")
+    /**
+     *
+     */
+    private fun getJourneyField(field: String) =
+        with(JOURNEY) {
+            when (field) {
+                "id" -> ID
+                "departureAt" -> DEPARTURE_AT
+                "arrivalAt" -> ARRIVAL_AT
+                "departureStationId" -> DEPARTURE_STATION_ID
+                "arrivalStationId" -> ARRIVAL_STATION_ID
+                "distance" -> DISTANCE
+                "duration" -> DURATION
+                else -> throw InvalidParameterException("unknown journey field")
+            }
         }
-    }
 
     fun getJourneyStatisticsByStationId(
         stationId: Int,
         from: Instant? = null,
-        to: Instant? = null
-    ): Deferred<JourneyStatistics> {
-        return with(JOURNEY) {
-            val condition = DEPARTURE_STATION_ID.eq(stationId).or(ARRIVAL_STATION_ID.eq(stationId))
-                .addDepartureTimestampConditions(from, to)
+        to: Instant? = null,
+    ): Deferred<JourneyStatistics> =
+        with(JOURNEY) {
+            val condition =
+                DEPARTURE_STATION_ID
+                    .eq(stationId)
+                    .or(ARRIVAL_STATION_ID.eq(stationId))
+                    .addDepartureTimestampConditions(from, to)
 
-            ctx.select(
-                count().filterWhere(DEPARTURE_STATION_ID.eq(stationId)),
-                count().filterWhere(ARRIVAL_STATION_ID.eq(stationId)),
-                avg(DISTANCE).filterWhere(DEPARTURE_STATION_ID.eq(stationId)),
-                avg(DISTANCE).filterWhere(ARRIVAL_STATION_ID.eq(stationId))
-            ).from(JOURNEY)
+            ctx
+                .select(
+                    count().filterWhere(DEPARTURE_STATION_ID.eq(stationId)),
+                    count().filterWhere(ARRIVAL_STATION_ID.eq(stationId)),
+                    avg(DISTANCE).filterWhere(DEPARTURE_STATION_ID.eq(stationId)),
+                    avg(DISTANCE).filterWhere(ARRIVAL_STATION_ID.eq(stationId)),
+                ).from(JOURNEY)
                 .where(condition)
                 .fetchAsync()
                 .thenApply { result ->
@@ -125,19 +141,17 @@ class JourneyRepository(private val ctx: DSLContext) {
                             departureCount = it.component1().toLong(),
                             arrivalCount = it.component2().toLong(),
                             departureAverageDistance = (it.component3() ?: 0).toDouble(), // avg can have null results
-                            arrivalAverageDistance = (it.component4() ?: 0).toDouble()
+                            arrivalAverageDistance = (it.component4() ?: 0).toDouble(),
                         )
                     }
-                }
-                .asDeferred()
+                }.asDeferred()
         }
-    }
 
     fun getTopStationsByStationId(
         stationId: Int,
         limitPerDirection: Int,
         from: Instant? = null,
-        to: Instant? = null
+        to: Instant? = null,
     ): Deferred<List<TopStationsQueryResult>> {
         val departureStationsCondition =
             JOURNEY.ARRIVAL_STATION_ID.eq(stationId).addDepartureTimestampConditions(from, to)
@@ -149,29 +163,31 @@ class JourneyRepository(private val ctx: DSLContext) {
             .fetchAsync()
             .thenApply { result ->
                 result.map { TopStationsQueryResult(it.component1()!!, it.component2()!!, it.component3()!!.toLong()) }
-            }
-            .asDeferred()
+            }.asDeferred()
     }
 
     private fun createJourneyStatisticSelect(
         condition: Condition,
-        limitPerDirection: Int
+        limitPerDirection: Int,
     ): SelectLimitPercentStep<Record3<Int?, Int?, Int>> {
         val journeyCount = count()
-        return ctx.select(
-            JOURNEY.DEPARTURE_STATION_ID,
-            JOURNEY.ARRIVAL_STATION_ID,
-            journeyCount
-        )
-            .from(JOURNEY)
+        return ctx
+            .select(
+                JOURNEY.DEPARTURE_STATION_ID,
+                JOURNEY.ARRIVAL_STATION_ID,
+                journeyCount,
+            ).from(JOURNEY)
             .where(condition)
             .groupBy(JOURNEY.DEPARTURE_STATION_ID, JOURNEY.ARRIVAL_STATION_ID)
             .orderBy(journeyCount.desc())
             .limit(limitPerDirection)
     }
 
-    private fun Condition.addDepartureTimestampConditions(from: Instant?, to: Instant?) =
-        this.run {
+    private fun Condition.addDepartureTimestampConditions(
+        from: Instant?,
+        to: Instant?,
+    ) = this
+        .run {
             if (from != null) {
                 and(JOURNEY.DEPARTURE_AT.greaterOrEqual(from))
             } else {
@@ -185,35 +201,38 @@ class JourneyRepository(private val ctx: DSLContext) {
             }
         }
 
-    private fun JourneyNew.toRecord() = JourneyRecord(
-        null,
-        departureAt,
-        arrivalAt,
-        departureStationId,
-        arrivalStationId,
-        distance,
-        duration
-    )
+    private fun JourneyNew.toRecord() =
+        JourneyRecord(
+            null,
+            departureAt,
+            arrivalAt,
+            departureStationId,
+            arrivalStationId,
+            distance,
+            duration,
+        )
 
-    private fun JourneyEntity.toRecord() = JourneyRecord(
-        id,
-        departureAt,
-        arrivalAt,
-        departureStationId,
-        arrivalStationId,
-        distance,
-        duration
-    )
+    private fun JourneyEntity.toRecord() =
+        JourneyRecord(
+            id,
+            departureAt,
+            arrivalAt,
+            departureStationId,
+            arrivalStationId,
+            distance,
+            duration,
+        )
 
-    private fun JourneyRecord.toEntity() = JourneyEntity(
-        id!!,
-        departureAt!!,
-        arrivalAt!!,
-        departureStationId!!,
-        arrivalStationId!!,
-        distance!!,
-        duration!!
-    )
+    private fun JourneyRecord.toEntity() =
+        JourneyEntity(
+            id!!,
+            departureAt!!,
+            arrivalAt!!,
+            departureStationId!!,
+            arrivalStationId!!,
+            distance!!,
+            duration!!,
+        )
 
     private fun JourneyRecord.toValuesExcludingId() = this.intoList().drop(1)
 }

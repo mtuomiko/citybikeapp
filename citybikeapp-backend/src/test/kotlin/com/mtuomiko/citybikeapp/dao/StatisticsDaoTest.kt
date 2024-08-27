@@ -16,28 +16,38 @@ class StatisticsDaoTest {
     @Test
     fun `Top stations are split and sorted according to arriving and departing station ids and journey count`() {
         val testStationId = 1
-        val testQueryResults = List(6) {
-            TopStationsQueryResultBuilder().departureStationId(testStationId).arrivalStationId(100 + it)
-                .journeyCount(1000L * (it + 1))
-                .build()
-        } + List(6) {
-            TopStationsQueryResultBuilder().arrivalStationId(testStationId).departureStationId(200 + it)
-                .journeyCount(100L * (it + 1))
-                .build()
-        }
+        val testQueryResults =
+            List(6) {
+                TopStationsQueryResultBuilder()
+                    .departureStationId(testStationId)
+                    .arrivalStationId(100 + it)
+                    .journeyCount(1000L * (it + 1))
+                    .build()
+            } +
+                List(6) {
+                    TopStationsQueryResultBuilder()
+                        .arrivalStationId(testStationId)
+                        .departureStationId(200 + it)
+                        .journeyCount(100L * (it + 1))
+                        .build()
+                }
 
-        every { journeyRepository.getTopStationsByStationId(testStationId, 6) } returns CompletableDeferred(
-            testQueryResults
-        )
+        every { journeyRepository.getTopStationsByStationId(testStationId, 6) } returns
+            CompletableDeferred(
+                testQueryResults,
+            )
 
         runBlocking {
             val result = statisticsDao.getTopStationsByStationId(testStationId, null, null, 6)
 
             val expectedStationIdsWhereDepartedFrom =
-                testQueryResults.filter { it.arrivalStationId == testStationId }.sortedByDescending { it.journeyCount }
+                testQueryResults
+                    .filter { it.arrivalStationId == testStationId }
+                    .sortedByDescending { it.journeyCount }
                     .map { it.departureStationId }
             val expectedStationIdsWhereArrivedTo =
-                testQueryResults.filter { it.departureStationId == testStationId }
+                testQueryResults
+                    .filter { it.departureStationId == testStationId }
                     .sortedByDescending { it.journeyCount }
                     .map { it.arrivalStationId }
 
@@ -47,7 +57,7 @@ class StatisticsDaoTest {
                 (o2.journeyCount - o1.journeyCount).toInt()
             }
             assertThat(result.forArrivingHere.map { it.id }).containsExactlyElementsOf(
-                expectedStationIdsWhereDepartedFrom
+                expectedStationIdsWhereDepartedFrom,
             )
 
             assertThat(result.forDepartingTo).hasSize(6)
@@ -61,16 +71,24 @@ class StatisticsDaoTest {
     @Test
     fun `Given query result with self referring top station, top station response does not exceed count limit`() {
         val testStationId = 1
-        val testQueryResults = listOf(
-            TopStationsQueryResultBuilder().departureStationId(2).arrivalStationId(testStationId)
-                .journeyCount(10).build(),
-            TopStationsQueryResultBuilder().departureStationId(testStationId).arrivalStationId(testStationId)
-                .journeyCount(5).build()
-        )
+        val testQueryResults =
+            listOf(
+                TopStationsQueryResultBuilder()
+                    .departureStationId(2)
+                    .arrivalStationId(testStationId)
+                    .journeyCount(10)
+                    .build(),
+                TopStationsQueryResultBuilder()
+                    .departureStationId(testStationId)
+                    .arrivalStationId(testStationId)
+                    .journeyCount(5)
+                    .build(),
+            )
 
-        every { journeyRepository.getTopStationsByStationId(testStationId, 1) } returns CompletableDeferred(
-            testQueryResults
-        )
+        every { journeyRepository.getTopStationsByStationId(testStationId, 1) } returns
+            CompletableDeferred(
+                testQueryResults,
+            )
 
         runBlocking {
             val result = statisticsDao.getTopStationsByStationId(testStationId, null, null, 1)

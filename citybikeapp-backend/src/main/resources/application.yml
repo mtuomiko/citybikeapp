@@ -1,47 +1,24 @@
-micronaut:
-  server:
-    port: ${PORT:8080}
-    cors:
-      enabled: true # no credentials so just allow everything for now
+logging.level.com.mtuomiko.citybikeapp: INFO
+
+server:
+  port: ${PORT:8080}
+
+spring:
   application:
-    name: citybikeapp
-  serde:
-    writeDatesAsTimestamps: false
-    serialization:
-      inclusion: NON_ABSENT
-  openapi:
-    target:
-      file: gen/api.yml
-endpoints:
-  all:
-    enabled: false
-  health:
-    enabled: true
-datasources:
-  default:
-    url: ${DATABASE_CONNECTION_URL:`jdbc:postgresql://host.docker.internal:5432/citybikeapp`}
+    name: "citybikeapp"
+  datasource:
+    url: ${DATABASE_CONNECTION_URL:jdbc:postgresql://host.docker.internal:5432/citybikeapp}
     username: ${DATABASE_CONNECTION_USERNAME:postgres}
     password: ${DATABASE_CONNECTION_PASSWORD:Hunter2}
-    driverClassName: org.postgresql.Driver
-    db-type: postgres
-    dialect: POSTGRES
-    schema-generate: NONE
-    schema: citybikeapp
-netty:
-  default:
-    allocator:
-      max-order: 3
-flyway:
-  datasources:
-    default:
-      enabled: true
-      defaultSchema: citybikeapp
+    driverClassName: "org.postgresql.Driver"
 citybikeapp:
   defaultPageSize: ${CITYBIKEAPP_DEFAULT_PAGE_SIZE:50}
   maxPageSize: ${CITYBIKEAPP_MAX_PAGE_SIZE:50}
+  maxSearchTermCount: 3
+  minSearchTermLength: 3
   dataLoader:
-    batchSize: ${CITYBIKEAPP_DATALOADER_BATCH_SIZE:1000}
-    minimumJourneyDistance: ${CITYBIKEAPP_DATALOADER_MIN_DISTANCE:10}
-    minimumJourneyDuration: ${CITYBIKEAPP_DATALOADER_MIN_DURATION:10}
-    stationUrl: ${CITYBIKEAPP_DATALOADER_STATION_URL:`https://opendata.arcgis.com/datasets/726277c507ef4914b0aec3cbcfcbfafc_0.csv`}
-    journeyUrls: ${CITYBIKEAPP_DATALOADER_JOURNEY_URLS:`https://dev.hsl.fi/citybikes/od-trips-2021/2021-05.csv,https://dev.hsl.fi/citybikes/od-trips-2021/2021-06.csv,https://dev.hsl.fi/citybikes/od-trips-2021/2021-07.csv`}
+    batchSize: 1000
+    minimumJourneyDistance: 10
+    minimumJourneyDuration: 10
+    stationUrl: https://opendata.arcgis.com/datasets/726277c507ef4914b0aec3cbcfcbfafc_0.csv
+    journeyUrls: https://dev.hsl.fi/citybikes/od-trips-2021/2021-05.csv,https://dev.hsl.fi/citybikes/od-trips-2021/2021-06.csv,https://dev.hsl.fi/citybikes/od-trips-2021/2021-07.csv

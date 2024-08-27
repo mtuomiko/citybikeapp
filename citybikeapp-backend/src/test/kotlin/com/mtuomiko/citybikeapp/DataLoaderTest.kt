@@ -2,59 +2,55 @@ package com.mtuomiko.citybikeapp
 
 import com.mtuomiko.citybikeapp.dao.repository.JourneyRepository
 import com.mtuomiko.citybikeapp.dao.repository.StationRepository
-import io.micronaut.configuration.picocli.PicocliRunner
-import io.micronaut.context.ApplicationContext
-import io.micronaut.context.annotation.Property
-import io.micronaut.test.annotation.MockBean
-import io.micronaut.test.extensions.junit5.annotation.MicronautTest
-import jakarta.inject.Inject
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.io.InputStream
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Profile
+import org.springframework.stereotype.Component
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.TestPropertySource
+import org.testcontainers.junit.jupiter.Testcontainers
+import java.nio.file.Path
 
-private const val stationDummyUrl = "stationDummyUrl"
-private const val journeysDummyUrls = "journeyDummyUrl1,journeyDummyUrl2,journeyDummyUrl3"
+private const val TEST_ROOT = "src/test/resources"
+private const val STATION_PATH = "$TEST_ROOT/stations.csv"
+private const val JOURNEY_PATHS = "$TEST_ROOT/journeys.csv"
 
-@MicronautTest
-@Property(name = "citybikeapp.dataLoader.stationUrl", value = stationDummyUrl)
-@Property(name = "citybikeapp.dataLoader.journeyUrls", value = journeysDummyUrls)
+@Testcontainers
+@SpringBootTest
+@TestPropertySource(properties = ["citybikeapp.dataLoader.stationUrl=$STATION_PATH"])
+@TestPropertySource(properties = ["citybikeapp.dataLoader.journeyUrls=$JOURNEY_PATHS"])
+@ActiveProfiles(profiles = ["test", "dataloader"])
 class DataLoaderTest {
+    @Autowired
+    private lateinit var dataLoader: DataLoader
 
-    @Inject
-    private lateinit var applicationContext: ApplicationContext
-
-    @Inject
+    @Autowired
     private lateinit var journeyRepository: JourneyRepository
 
-    @Inject
+    @Autowired
     private lateinit var stationRepository: StationRepository
 
     @Test
-    fun `Using CSV files with malformed and duplicate data, loader loads only unique and valid entities`() {
-        PicocliRunner.run(DataLoader::class.java, applicationContext)
+    fun `Using CSV files including malformed and duplicate data, loader loads only unique and valid entities`() {
+        dataLoader.run()
 
-        val allJourneys = journeyRepository.findAll()
+        val allJourneys = journeyRepository.getCount()
         val allStations = stationRepository.findAll()
         // TODO: Use more readable testing methods. Magic numbers below are based on the csv file contents
-        assertThat(allJourneys).hasSize(8)
+        assertThat(allJourneys).isEqualTo(8)
         assertThat(allStations).hasSize(10)
-    }
-
-    @MockBean(FileProvider::class) // using MockBean for test class scope
-    private fun fileProvider(): FileProvider {
-        return MockFileProvider()
     }
 }
 
-class MockFileProvider : FileProvider {
-    private val splitJourneyUrls = journeysDummyUrls.split(',')
-
-    override fun getLocalInputStream(url: String): InputStream =
-        when (url) {
-            stationDummyUrl -> ClassLoader.getSystemResource("stations.csv").openStream()
-            in splitJourneyUrls -> ClassLoader.getSystemResource("journeys.csv").openStream()
-            else -> throw Exception("no preset source for $url")
-        }
+@Component
+@Profile(value = ["test"])
+class TestFileProvider : FileProvider {
+    override fun getByURI(uri: String): Path {
+        val path = Path.of(uri)
+        return path
+    }
 
     override fun deleteFiles() {
         // NOOP

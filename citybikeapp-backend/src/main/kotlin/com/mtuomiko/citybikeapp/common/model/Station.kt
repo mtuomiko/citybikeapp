@@ -6,5 +6,5 @@ class Station(
     val addressFinnish: String,
     val cityFinnish: String,
     val operator: String,
-    val capacity: Int
+    val capacity: Int,
 )

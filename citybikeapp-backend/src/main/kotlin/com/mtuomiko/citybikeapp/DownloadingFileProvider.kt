@@ -1,59 +1,63 @@
 package com.mtuomiko.citybikeapp
 
-import io.micronaut.context.annotation.Requires
-import jakarta.inject.Singleton
-import mu.KotlinLogging
-import java.io.InputStream
-import java.net.URL
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.annotation.Profile
+import org.springframework.stereotype.Component
+import java.io.IOException
+import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
-import kotlin.io.path.inputStream
 
 private val logger = KotlinLogging.logger {}
 
 private const val DOWNLOAD_DIR = "temp"
 
-@Singleton
-@Requires(notEnv = ["e2e"])
+@Component
+@Profile(value = ["!test"])
 class DownloadingFileProvider : FileProvider {
-    private val directoryPath = Path.of(DOWNLOAD_DIR)
+    private val localPath = Path.of(DOWNLOAD_DIR)
     private val filePathList = mutableListOf<Path>()
 
     init {
-        directoryPath.createDirectories()
+        localPath.createDirectories()
     }
 
-    override fun getLocalInputStream(url: String): InputStream {
-        logger.info { "Handling URL $url" }
+    override fun getByURI(uri: String): Path {
+        logger.info { "Handling URL $uri" }
 
-        val path = directoryPath.resolve(getFilename(url))
+        val path = localPath.resolve(getFilenameFromURL(uri))
         if (!Files.exists(path)) {
-            downloadToPath(url, path)
+            downloadToPath(uri, path)
         } else {
             logger.info { "File $path already exists on filesystem" }
         }
 
         filePathList.add(path)
         logger.info { "Providing $path" }
-        return path.inputStream()
+        return path
     }
 
     override fun deleteFiles() {
         filePathList.forEach {
             logger.debug { "Deleting $it" }
-            Files.deleteIfExists(it)
+            try {
+                Files.deleteIfExists(it)
+            } catch (e: IOException) {
+                logger.error { e }
+            }
         }
         filePathList.clear()
         logger.info { "All temp files deleted" }
     }
 
-    private fun downloadToPath(url: String, path: Path) {
+    private fun downloadToPath(
+        url: String,
+        path: Path,
+    ) {
         logger.info { "Downloading $url to $path" }
-        URL(url).openStream().use {
+        URI(url).toURL().openStream().use {
             Files.copy(it, path)
         }
     }
-
-    private fun getFilename(url: String) = url.split('/').last()
 }

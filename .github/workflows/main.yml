@@ -18,7 +18,7 @@ jobs:
       DATABASE_CONNECTION_PASSWORD: Hunter2
     services:
       postgres:
-        image: postgres:14
+        image: postgres:15
         env:
           POSTGRES_PASSWORD: ${{ env.DATABASE_CONNECTION_PASSWORD }}
           POSTGRES_DB: citybikeapp
@@ -33,10 +33,10 @@ jobs:
     steps:
       # Frontend first since it (potentially) fails faster
 
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
       - name: "Frontend: install, generate, lint, build"
         working-directory: citybikeapp-frontend
         run: |
@@ -48,36 +48,38 @@ jobs:
       # Backend
 
       - name: Setup JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
       - name: Setup Gradle # use caching for Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          build-root-directory: citybikeapp-backend
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Gradle build # will run test & check tasks also
         working-directory: citybikeapp-backend
         run: ./gradlew clean build jacocoTestCoverageVerification # feeble attempt to keep test coverage up
 
       # E2E
 
+      - name: Copy E2E data to backend temp dir where it can pick up them up
+        run: |
+          cp ./e2e/backend_data/*.csv ./citybikeapp-backend/temp
       - name: Insert basic E2E test data using dataloader
         working-directory: citybikeapp-backend
         env:
-          MICRONAUT_ENVIRONMENTS: e2e
-          CITYBIKEAPP_DATALOADER_STATION_URL: 'e2e/stations.csv'
-          CITYBIKEAPP_DATALOADER_JOURNEY_URLS: 'e2e/journeys.csv'
-        run: ./gradlew run --args="dataloader"
+          SPRING_PROFILES_ACTIVE: dataloader
+          CITYBIKEAPP_DATALOADER_STATIONURL: 'e2e/stations.csv'
+          CITYBIKEAPP_DATALOADER_JOURNEYURLS: 'e2e/journeys.csv'
+        run: ./gradlew bootRun
       - name: Start backend in background
         working-directory: citybikeapp-backend
-        run: ./gradlew run &
+        run: ./gradlew bootRun &
       - name: Start frontend devserver in background
         working-directory: citybikeapp-frontend
         run: npm run start &
-      - name: Cypress tests # does install and apparently some caching as well
-        uses: cypress-io/github-action@v5
+      - name: Cypress tests # does cypress install and apparently some caching as well
+        uses: cypress-io/github-action@v6
         with:
           command: npm run test:e2e
           working-directory: e2e
-          wait-on: 'http://localhost:3003, http://localhost:8080/health'
+          wait-on: 'http://localhost:3003, http://localhost:8080/actuator/health'

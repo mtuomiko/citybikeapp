@@ -34,7 +34,9 @@ const getJourneys = async (parameters: JourneyParameters): Promise<JourneysRespo
     parameters.cursor
   );
 
+  // map axios journeys to our own with more detailed typing and parsed timestamps
   const journeys = response.data.journeys.map(journey => parseJourney(journey));
+
   const cursor = response.data.meta.nextCursor ?? undefined;
   return {
     journeys,

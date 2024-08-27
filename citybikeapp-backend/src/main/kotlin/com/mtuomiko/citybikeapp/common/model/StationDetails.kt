@@ -12,5 +12,5 @@ class StationDetails(
     val operator: String,
     val capacity: Int,
     val longitude: Double,
-    val latitude: Double
+    val latitude: Double,
 )

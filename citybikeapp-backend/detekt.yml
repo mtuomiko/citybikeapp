@@ -1,14 +1,9 @@
 # custom rule configurations
 
 style:
+  # Allow TODO. Disables the entire rule.
   ForbiddenComment:
     active: false
-    values:
-      - 'FIXME:'
-      - 'STOPSHIP:'
-      - 'TODO:'
-    allowedPatterns: ''
-    customMessage: ''
 complexity:
   LongParameterList:
     # Various data holding objects can have large constructors. Could use ignoreDataClasses also but that would require

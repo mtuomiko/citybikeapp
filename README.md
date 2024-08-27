@@ -15,12 +15,12 @@ see [citybikeapp-frontend](citybikeapp-frontend/) and [citybikeapp-backend](city
 
 ### With Docker Compose
 
-This requires Java JDK 17, a Docker host, Docker Compose and local port `8080` to be available on the host machine.
+This requires Java JDK 21, a Docker host, Docker Compose and local port `8080` to be available on the host machine.
 You can change the port in [docker-compose.local.yml](docker-compose.local.yml).
 
-1. Build backend and generate its Dockerfile.
-    * Windows: run `.\citybikeapp-backend\gradlew.bat -p .\citybikeapp-backend\ buildLayers dockerfile` at project root
-    * Other: run `./citybikeapp-backend/gradlew -p ./citybikeapp-backend buildLayers dockerfile` at project root
+1. Build backend
+    * Windows: run `.\citybikeapp-backend\gradlew.bat -p .\citybikeapp-backend\ build` at project root
+    * Other: run `./citybikeapp-backend/gradlew -p ./citybikeapp-backend build` at project root
 2. Run the local docker-compose setup.
     * Run `docker compose -f docker-compose.local.yml --env-file docker/.env.local --profile dataloader up` at project 
       root

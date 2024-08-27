@@ -20,24 +20,28 @@ class StationEntityBuilder {
     var createdAt: Instant = Instant.parse("2022-11-15T18:35:24Z")
 
     fun id(id: Int) = apply { this.id = id }
+
     fun nameFinnish(name: String) = apply { this.nameFinnish = name }
+
     fun nameSwedish(name: String) = apply { this.nameSwedish = name }
+
     fun nameEnglish(name: String) = apply { this.nameEnglish = name }
 
-    fun build() = StationEntity(
-        id,
-        nameFinnish,
-        nameSwedish,
-        nameEnglish,
-        addressFinnish,
-        addressSwedish,
-        cityFinnish,
-        citySwedish,
-        operator,
-        capacity,
-        longitude,
-        latitude,
-        modifiedAt,
-        createdAt
-    )
+    fun build() =
+        StationEntity(
+            id,
+            nameFinnish,
+            nameSwedish,
+            nameEnglish,
+            addressFinnish,
+            addressSwedish,
+            cityFinnish,
+            citySwedish,
+            operator,
+            capacity,
+            longitude,
+            latitude,
+            modifiedAt,
+            createdAt,
+        )
 }
