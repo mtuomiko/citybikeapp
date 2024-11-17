@@ -1,9 +1,11 @@
 import dayjs, { extend } from "dayjs";
 import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import { stationApi } from "clients";
 import { Station, StationStatistics } from "generated";
 
 extend(utc);
+extend(timezone);
 
 export interface StationParameters {
   search: string
@@ -36,20 +38,23 @@ const getStations = async (parameters: StationParameters): Promise<StationsRespo
   };
 };
 
-const localDateTimeFormat = "YYYY-MM-DDTHH:mm:ss";
-
 /**
- * Force timestamps initiated by browser/react-timepicker to UTC so we can finally pass them as local date times to
- * backend.
+ * Convert date values to UTC (zero) offset ISO8601 strings for backend API. Could use offset but nothing gained, at
+ * least now that all data is in a single timezone.
+ *
+ * MonthPicker as the source of dates can use whatever locale/timezone (browser default?). Convert those explicitly to
+ * the same "time" but in Helsinki TZ.
  */
 const getStatistics = async (parameters: StatisticsParameters): Promise<StationStatistics> => {
   const from = (parameters.from === null)
     ? undefined
-    : dayjs(parameters.from).utc(true).format(localDateTimeFormat);
+    : dayjs.tz(parameters.from, "Europe/Helsinki").toISOString();
 
+  // MonthPicker represents the selected month as a Date at the beginning of the selected month, we also need to convert
+  // that to the end of the month.
   const to = (parameters.to === null)
     ? undefined
-    : dayjs(parameters.to).utc(true).endOf("month").format(localDateTimeFormat);
+    : dayjs.tz(parameters.to, "Europe/Helsinki").endOf("month").toISOString();
 
   const response = await stationApi.getStationStatistics(parameters.id, from, to);
   return response.data.statistics;

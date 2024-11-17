@@ -1,8 +1,11 @@
 package com.mtuomiko.citybikeapp
 
-import java.io.InputStream
+import java.nio.file.Path
 
 interface FileProvider {
-    fun getLocalInputStream(url: String): InputStream
+    fun getByURI(uri: String): Path
+
     fun deleteFiles()
+
+    fun getFilenameFromURL(url: String) = url.split('/').last()
 }

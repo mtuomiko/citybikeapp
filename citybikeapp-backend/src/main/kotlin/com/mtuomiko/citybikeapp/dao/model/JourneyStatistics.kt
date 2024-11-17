@@ -4,5 +4,5 @@ data class JourneyStatistics(
     val departureCount: Long,
     val arrivalCount: Long,
     val departureAverageDistance: Double,
-    val arrivalAverageDistance: Double
+    val arrivalAverageDistance: Double,
 )

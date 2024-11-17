@@ -6,7 +6,7 @@ FROM openapitools/openapi-generator-cli:v6.2.1 as api-client-build-stage
 
 WORKDIR /local
 
-COPY citybikeapp-backend/gen/api.yml .
+COPY citybikeapp-backend/src/main/resources/api/api.yml .
 
 RUN bash /usr/local/bin/docker-entrypoint.sh generate \
     -i /local/api.yml \

@@ -16,5 +16,5 @@ data class StationEntity(
     val longitude: Double,
     val latitude: Double,
     val modifiedAt: Instant,
-    val createdAt: Instant
+    val createdAt: Instant,
 )

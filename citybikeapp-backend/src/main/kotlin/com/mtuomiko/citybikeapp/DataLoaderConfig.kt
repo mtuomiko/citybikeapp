@@ -1,13 +1,12 @@
 package com.mtuomiko.citybikeapp
 
-import io.micronaut.context.annotation.ConfigurationInject
-import io.micronaut.context.annotation.ConfigurationProperties
+import org.springframework.boot.context.properties.ConfigurationProperties
 
-@ConfigurationProperties("citybikeapp.dataLoader")
-class DataLoaderConfig @ConfigurationInject constructor(
+@ConfigurationProperties("citybikeapp.data-loader")
+class DataLoaderConfig(
     val batchSize: Int,
     val minimumJourneyDistance: Int,
     val minimumJourneyDuration: Int,
     val stationUrl: String,
-    val journeyUrls: List<String>
+    val journeyUrls: List<String>,
 )

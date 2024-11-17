@@ -13,15 +13,17 @@ services:
   frontend:
     image: mtuomiko/citybikeapp-frontend
     build:
-      context: . # code generation needs access to backend API spec file so using root context
+      context: . # frontend client code generation needs access to backend API spec file so using root context
       dockerfile: docker/Dockerfile.frontend
+    pull_policy: build
     depends_on:
      - backend
   backend:
     image: mtuomiko/citybikeapp-backend
     build:
-      context: ./citybikeapp-backend/build/docker/main/
-      dockerfile: Dockerfile
+      context: ./citybikeapp-backend/
+      dockerfile: Containerfile
+    pull_policy: build
     environment:
       - DATABASE_CONNECTION_URL
       - DATABASE_CONNECTION_USERNAME
@@ -31,17 +33,17 @@ services:
   dataloader:
     image: mtuomiko/citybikeapp-backend
     environment:
+      - SPRING_PROFILES_ACTIVE=default,dataloader
       - DATABASE_CONNECTION_URL
       - DATABASE_CONNECTION_USERNAME
       - DATABASE_CONNECTION_PASSWORD
-    command: dataloader
     depends_on:
      - backend
      - db
     profiles:
      - dataloader
   db:
-    image: postgres:14
+    image: postgres:15
     environment:
       POSTGRES_USER: ${DATABASE_CONNECTION_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_CONNECTION_PASSWORD}

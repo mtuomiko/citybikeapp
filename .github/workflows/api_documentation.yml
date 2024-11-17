@@ -6,24 +6,24 @@ on:
       - master
     paths:
       - '.github/workflows/api_documentation.yml'
-      - 'citybikeapp-backend/gen/api.yml'
+      - 'citybikeapp-backend/src/main/resources/api/api.yml'
 
 jobs:
   push_specs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Get the file from triggering commit and stage
         run: |
           # get documentation branch
           git fetch origin api_documentation:api_documentation
           git switch api_documentation
           # get the updated file based on current triggering commit hash, could probably use branch also
-          git checkout ${{ github.sha }} citybikeapp-backend/gen/api.yml
+          git checkout ${{ github.sha }} citybikeapp-backend/src/main/resources/api/api.yml
           # Documentation branch expects API file to reside at root.
-          mv -f citybikeapp-backend/gen/api.yml .
+          mv -f citybikeapp-backend/src/main/resources/api/api.yml .
           # add both paths so the gen path file doesn't remain in git
-          git add api.yml citybikeapp-backend/gen/api.yml
+          git add api.yml citybikeapp-backend/src/main/resources/api/api.yml
       - name: Check for changes
         id: diff
         run: |

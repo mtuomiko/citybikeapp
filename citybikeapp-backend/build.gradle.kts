@@ -1,141 +1,175 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 import io.gitlab.arturbosch.detekt.Detekt
-import io.micronaut.gradle.docker.MicronautDockerfile
-import org.jooq.meta.jaxb.Property as JooqProperty
 
-plugins {
-    id("org.jetbrains.kotlin.jvm").version("1.6.21")
-    id("org.jetbrains.kotlin.kapt").version("1.6.21")
-    id("org.jetbrains.kotlin.plugin.allopen").version("1.6.21")
-    id("com.github.johnrengelman.shadow").version("7.1.2")
-    id("io.micronaut.application").version("3.7.0")
-    id("nu.studer.jooq").version("8.1")
-
-    id("io.gitlab.arturbosch.detekt").version("1.22.0")
-    id("com.diffplug.spotless").version("6.12.0")
-    id("jacoco")
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        // Don't like this, but in some way we need to provide gradle flyway script this dependency. And I couldn't
+        // figure out a way to do it with a separately defined "configuration" for the flywayMigrate task.
+        classpath("org.flywaydb:flyway-database-postgresql:10.10.0")
+    }
 }
 
-version = "0.1"
-group = "com.mtuomiko"
+plugins {
+    kotlin("jvm") version "1.9.24"
+    kotlin("plugin.spring") version "1.9.24"
 
-val kotlinVersion = project.properties["kotlinVersion"]
+    id("org.springframework.boot") version "3.3.3"
+    // fails with detekt kotlin version mismatch without workaround, just using spring-boot-dependencies in deps now
+    // id("io.spring.dependency-management") version "1.1.6"
+    id("org.openapi.generator") version "7.8.0"
+    id("org.flywaydb.flyway") version "10.10.0" // match versions with spring bom
+    id("org.jooq.jooq-codegen-gradle") version "3.19.10" // match spring jooq
+
+    id("jacoco")
+
+    id("io.gitlab.arturbosch.detekt").version("1.23.6")
+    id("com.diffplug.spotless").version("6.25.0")
+}
+
+group = "com.mtuomiko"
+version = "0.0.1-SNAPSHOT"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    kapt("io.micronaut:micronaut-http-validation")
-    kapt("io.micronaut.openapi:micronaut-openapi")
-    kapt("io.micronaut.serde:micronaut-serde-processor")
-    kapt("info.picocli:picocli-codegen")
-    kapt("org.mapstruct:mapstruct-processor:1.5.3.Final")
+    api(platform("org.springframework.boot:spring-boot-dependencies:3.3.3"))
+    api(platform("org.testcontainers:testcontainers-bom:1.20.1"))
 
-    jooqGenerator("com.github.sabomichal:jooq-meta-postgres-flyway:1.0.9")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    implementation("info.picocli:picocli")
-    implementation("io.micronaut.picocli:micronaut-picocli")
-    implementation("io.micronaut:micronaut-http-client")
-    implementation("io.micronaut:micronaut-management")
-    implementation("io.micronaut.flyway:micronaut-flyway")
-    implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
-    implementation("io.micronaut.serde:micronaut-serde-jackson")
-    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
-    implementation("io.micronaut.sql:micronaut-jooq")
-    implementation("io.swagger.core.v3:swagger-annotations")
-    implementation("jakarta.annotation:jakarta.annotation-api")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-    implementation("io.micronaut:micronaut-validation")
-    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.7.0")
-    implementation("io.github.microutils:kotlin-logging-jvm:2.1.23") // match logback v1 version from micronaut bom
-    implementation("io.micronaut.openapi:micronaut-openapi") { // include annotations
-        exclude(group = "org.slf4j", module = "slf4j-nop") // for some reason openapi tries to include this
-    }
-    implementation("org.mapstruct:mapstruct:1.5.3.Final")
+    implementation("org.springframework.boot:spring-boot-starter-jooq")
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-postgresql")
+
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8")
 
-    compileOnly("jakarta.persistence:jakarta.persistence-api:3.1.0")
-    compileOnly("com.google.code.findbugs:jsr305") // "unknown enum constant When.MAYBE" warning on kaptKotlin task
+    implementation("io.github.oshai:kotlin-logging-jvm:6.0.9")
 
-    runtimeOnly("ch.qos.logback:logback-classic")
+    implementation("com.jsoizo:kotlin-csv-jvm:1.10.0") // for dataloader csv parsing
+
     runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
 
-    testImplementation("org.assertj:assertj-core")
-    testImplementation("io.mockk:mockk")
-    testImplementation("org.testcontainers:junit-jupiter")
-    testImplementation("org.testcontainers:postgresql")
-    testImplementation("org.testcontainers:testcontainers")
+    // spring bom not enough without version, match spring bom version. codegen requires build time driver dep
+    jooqCodegen("org.postgresql:postgresql:42.7.3")
 
-    // "unknown enum constant GenerationType.IDENTITY" warning on kaptTestKotlin task
-    testCompileOnly("jakarta.persistence:jakarta.persistence-api:3.1.0")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("io.mockk:mockk:1.13.11") // last kotlin 1.x ?
+
+    testImplementation("org.testcontainers:junit-jupiter") // from spring bom
+    testImplementation("org.testcontainers:postgresql") // from spring bom
+
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation(kotlin("stdlib-jdk8"))
 }
 
-application {
-    mainClass.set("com.mtuomiko.citybikeapp.Application")
-}
-java {
-    sourceCompatibility = JavaVersion.toVersion("17")
-}
-
-tasks {
-    compileKotlin {
-        kotlinOptions {
-            jvmTarget = "17"
-        }
-    }
-    compileTestKotlin {
-        kotlinOptions {
-            jvmTarget = "17"
-        }
-    }
-}
-graalvmNative.toolchainDetection.set(false)
-micronaut {
-    runtime("netty")
-    testRuntime("junit5")
-    processing {
-        incremental(true)
-        annotations("com.mtuomiko.citybikeapp.*")
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll("-Xjsr305=strict")
     }
 }
 
-detekt {
-    buildUponDefaultConfig = true
-    source = files("$rootDir/src")
-    config = files("$rootDir/detekt.yml")
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
-tasks.withType<Detekt>().configureEach {
-    jvmTarget = "17"
-    reports { // failure and console output enough for now
-        xml.required.set(false)
-        html.required.set(false)
-        txt.required.set(false)
-        sarif.required.set(false)
-        md.required.set(false)
-    }
-    exclude(
-        "*.gradle.kts", // no need for so strict checks on scripts (unused can cause issues, for example)
-        "**/test/**"
+openApiGenerate {
+    generatorName = "kotlin-spring"
+    inputSpec = "$rootDir/src/main/resources/api/api.yml"
+    outputDir = "${layout.buildDirectory.get()}/generated"
+    apiPackage = "com.mtuomiko.citybikeapp.gen.api"
+    modelPackage = "com.mtuomiko.citybikeapp.gen.model"
+    configOptions.set(
+        mapOf(
+            "useSpringBoot3" to "true",
+            "interfaceOnly" to "true", // only interfaces, no actual controller code
+            // we don't need the swagger annotations, would require additional dependencies to be compilable
+            "annotationLibrary" to "none",
+            "gradleBuildFile" to "false", // we're not generating an independent project
+            "useJakartaEE" to "true",
+            "documentationProvider" to "none", // not needed in generated code
+            "exceptionHandler" to "false", // we have our own
+        ),
     )
+    typeMappings.set(mapOf("java.time.OffsetDateTime" to "java.time.Instant"))
 }
 
-configure<SpotlessExtension> {
-    kotlin {
-        target("**/*.kt")
-        ktlint("0.47.1")
-    }
-    kotlinGradle {
-        target("**/*.gradle.kts")
-        ktlint("0.47.1")
+// For overriding the url in GitHub actions so Flyway gradle task works. Duplicate config, oh well ¯\_(ツ)_/¯
+val jdbcUrl =
+    System.getenv("DATABASE_CONNECTION_URL") ?: "jdbc:postgresql://host.docker.internal:5432/citybikeapp"
+
+// This is for gradle flyway tasks. Separate from what Spring runs at runtime.
+flyway {
+    driver = "org.postgresql.Driver"
+    url = jdbcUrl
+    user = "postgres"
+    password = "Hunter2"
+    schemas = arrayOf("citybikeapp")
+}
+
+jooq {
+
+    configuration {
+        jdbc {
+            driver = "org.postgresql.Driver"
+            url = jdbcUrl
+            user = "postgres"
+            password = "Hunter2"
+        }
+
+        generator {
+            name = "org.jooq.codegen.KotlinGenerator"
+            database {
+                name = "org.jooq.meta.postgres.PostgresDatabase"
+                inputSchema = "citybikeapp"
+                includes = "citybikeapp.*"
+                excludes = "flyway_schema_history"
+
+                forcedTypes {
+                    // get the timestamps as Instants, not OffsetDateTime (since using timestamptz)
+                    forcedType {
+                        name = "INSTANT"
+                        includeTypes = "TIMESTAMP.*"
+                    }
+                }
+            }
+            target {
+                packageName = "com.mtuomiko.citybikeapp.jooq"
+            }
+        }
     }
 }
 
-tasks.named<MicronautDockerfile>("dockerfile") {
-    baseImage.set("eclipse-temurin:17.0.5_8-jre-alpine")
+sourceSets {
+    main {
+        kotlin {
+            srcDir("${layout.buildDirectory.get()}/generated")
+        }
+    }
+}
+
+tasks.jooqCodegen {
+    dependsOn(tasks.flywayMigrate)
+}
+
+tasks.compileKotlin {
+    dependsOn(tasks.jooqCodegen) // dao depends on the jooq code generation results
+    dependsOn(tasks.openApiGenerate) // api depends on the openapi generation results
 }
 
 tasks.jacocoTestCoverageVerification {
@@ -153,64 +187,43 @@ tasks.jacocoTestReport {
         files(
             classDirectories.files.map {
                 fileTree(it) {
+                    // exclude any generated jooq code from test reports
                     exclude("**/com/mtuomiko/citybikeapp/jooq/**")
                 }
-            }
-        )
+            },
+        ),
     )
 }
 
-jooq {
-    version.set("3.17.6")
-
-    configurations {
-        create("main") {
-            jooqConfiguration.apply {
-                generator.apply {
-                    name = "org.jooq.codegen.KotlinGenerator"
-                    database.apply {
-                        name = "com.github.sabomichal.jooq.PostgresDDLDatabase"
-                        inputSchema = "citybikeapp"
-                        includes = "citybikeapp.*"
-                        excludes = "flyway_schema_history"
-                        properties.addAll(
-                            listOf(
-                                JooqProperty().apply {
-                                    key = "locations"
-                                    value = "src/main/resources/db/migration"
-                                },
-                                JooqProperty().apply {
-                                    key = "dockerImage"
-                                    value = "postgres:14"
-                                },
-                                JooqProperty().apply {
-                                    key = "defaultSchema"
-                                    value = "citybikeapp"
-                                }
-                            )
-                        )
-                        forcedTypes.addAll(
-                            listOf(
-                                org.jooq.meta.jaxb.ForcedType().apply {
-                                    name = "INSTANT"
-                                    includeTypes = "TIMESTAMP.*"
-                                }
-                            )
-                        )
-                    }
-                    target.apply {
-                        packageName = "com.mtuomiko.citybikeapp.jooq"
-                    }
-                    strategy.name = "org.jooq.codegen.DefaultGeneratorStrategy"
-                }
-            }
-        }
-    }
+detekt {
+    buildUponDefaultConfig = true
+    source.setFrom(files("$rootDir/src"))
+    config.setFrom(files("$rootDir/detekt.yml"))
 }
 
-tasks.named<nu.studer.gradle.jooq.JooqGenerate>("generateJooq") {
-    inputs.files(fileTree("src/main/resources/db/migration"))
-        .withPropertyName("migrations")
-        .withPathSensitivity(PathSensitivity.RELATIVE)
-    allInputsDeclared.set(true)
+tasks.withType<Detekt>().configureEach {
+    jvmTarget = "21"
+    reports {
+        // failure and console output enough for now
+        xml.required.set(false)
+        html.required.set(false)
+        txt.required.set(false)
+        sarif.required.set(false)
+        md.required.set(false)
+    }
+    exclude(
+        "*.gradle.kts", // no need for so strict checks on scripts (unused can cause issues, for example)
+        "**/test/**",
+    )
+}
+
+configure<SpotlessExtension> {
+    kotlin {
+        target("**/*.kt")
+        ktlint("1.3.1")
+    }
+    kotlinGradle {
+        target("**/*.gradle.kts")
+        ktlint("1.3.1")
+    }
 }

@@ -9,5 +9,5 @@ data class JourneyEntity(
     val departureStationId: Int,
     val arrivalStationId: Int,
     val distance: Int,
-    val duration: Int
+    val duration: Int,
 )

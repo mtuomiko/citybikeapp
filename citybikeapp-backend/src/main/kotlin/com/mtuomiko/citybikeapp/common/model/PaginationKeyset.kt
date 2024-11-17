@@ -1,6 +1,6 @@
 package com.mtuomiko.citybikeapp.common.model
 
-data class PaginationKeyset<T1, T2>(
+data class PaginationKeyset<T1, Long>(
     val value: T1,
-    val id: T2
+    val id: Long,
 )

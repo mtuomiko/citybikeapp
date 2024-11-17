@@ -11,31 +11,35 @@ wrapper script file which is `gradlew.bat` for Windows, `gradlew` otherwise.
 
 ### Requirements
 
-* Java JDK 17
+#### Development / running locally
+
+* Java 21
     * For example, use [Eclipse Temurin](https://adoptium.net/temurin/releases/)
-* Docker host (for tests and jOOQ code generation that runs against a temporary PostgreSQL testcontainer). Podman might
-  work also.
-    * See [http://www.docker.com](https://www.docker.com/). Docker Desktop is not free for businesses.
-    * (or [https://podman.io/](https://podman.io/))
-* PostgreSQL 14 database access (when running)
+* PostgreSQL 15 database access for jOOQ code generation that in turn depends on Flyway migrations for the schema
+    * App assumes an existing PostgreSQL 15 instance to be available at `postgresql://host.docker.internal:5432/citybikeapp`
+      with credentials `postgres:Hunter2`.
 
-### Running locally
-
-* App assumes an existing PostgreSQL 14 instance to be available at `postgresql://host.docker.internal:5432/citybikeapp`
-  with credentials `postgres:Hunter2`.
-
-  Run one for example with docker
-  using `docker run -d --restart --name dev-postgres -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_DB=citybikeapp -e POSTGRES_PASSWORD=Hunter2 postgres:14`
-* Run dataloading using Gradle task `run` with `dataloader` argument, for example
-  with `./gradlew run --args "dataloader"`
+      Run one for example with docker
+      using `docker run -d --restart --name dev-postgres -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_DB=citybikeapp -e POSTGRES_PASSWORD=Hunter2 postgres:15`
+* Tests are run against a Testcontainers provided PostgreSQL 15
+    * Docker host is required for Testcontainers. Podman should work.
+* Run dataloading using Gradle task `run` with `dataloader` Spring profile, for example
+  with `SPRING_PROFILES_ACTIVE=dataloader ./gradlew run`
     * If you need to use a different DB configuration, see [Environment variables](#environment-variables).
     * You could, for example, explicitly use `localhost` (default `host.docker.internal` should be equivalent) by using
-      `DATABASE_CONNECTION_URL=jdbc:postgresql://localhost:5432/citybikeapp ./gradlew run --args "dataloader"`.
+      `DATABASE_CONNECTION_URL=jdbc:postgresql://localhost:5432/citybikeapp ./gradlew run`.
         * Windows terminals need some additional wizardry to set env vars: `SET FOO=bar` or `$env:FOO='bar'`
 * Run application using Gradle task `run`, for example with `./gradlew run`
 * Application API will be available under http://localhost:8080/
     * See [api.yml](gen/api.yml) or [https://mtuomiko.github.io/citybikeapp/](https://mtuomiko.github.io/citybikeapp/)
       for available endpoints
+
+#### Running in container
+
+* Java 17
+* PostgreSQL 15 database access
+    * jOOQ minimum supported version. Might work on older.
+* ~300 extra MB of space on filesystem for downloading datasets
 
 ### Gradle tasks
 
@@ -80,8 +84,8 @@ The spec isn't too pretty, API-first approach would probably be nicer and result
 
 ## Environment variables
 
-This table describes relevant variables when running the application in production mode. Micronaut allows property
-overriding using environment variables (like Spring does) but these are explicitly configured.
+This table describes relevant variables when running the application in production mode. Spring allows property
+configuration by binding from environment variables, but these are explicitly configured.
 
 #### Common
 
@@ -96,13 +100,13 @@ overriding using environment variables (like Spring does) but these are explicit
 
 #### Data loader specific environment variables
 
-| Environment variable                  | Description                                             | Default                 | Example                                                   |
-|---------------------------------------|---------------------------------------------------------|-------------------------|-----------------------------------------------------------|
-| `CITYBIKEAPP_DATALOADER_MIN_DISTANCE` | Minimum filter on journey length (meters)               | `10`                    |                                                           |
-| `CITYBIKEAPP_DATALOADER_MIN_DURATION` | Minimum filter on journey duration (seconds)            | `10`                    |                                                           |
-| `CITYBIKEAPP_DATALOADER_BATCH_SIZE`   | Database batch size for inserts                         | `1000`                  |                                                           |
-| `CITYBIKEAPP_DATALOADER_STATION_URL`  | URL for station data CSV file                           | [[1]](#default_station) | `http://foo.bar/file.csv`                                 |
-| `CITYBIKEAPP_DATALOADER_JOURNEY_URLS` | Comma separated list of URLs for journey data CSV files | [[2]](#default_journey) | `http://foo.bar/journey1.csv,http://foo.bar/journey2.csv` |
+| Environment variable                            | Description                                             | Default                 | Example                                                   |
+|-------------------------------------------------|---------------------------------------------------------|-------------------------|-----------------------------------------------------------|
+| `CITYBIKEAPP_DATALOADER_MINIMUMJOURNEYDISTANCE` | Minimum filter on journey length (meters)               | `10`                    |                                                           |
+| `CITYBIKEAPP_DATALOADER_MINIMUMJOURNEYDURATION` | Minimum filter on journey duration (seconds)            | `10`                    |                                                           |
+| `CITYBIKEAPP_DATALOADER_BATCHSIZE`              | Database batch size for inserts                         | `1000`                  |                                                           |
+| `CITYBIKEAPP_DATALOADER_STATIONURL`             | URL for station data CSV file                           | [[1]](#default_station) | `http://foo.bar/file.csv`                                 |
+| `CITYBIKEAPP_DATALOADER_JOURNEYURLS`            | Comma separated list of URLs for journey data CSV files | [[2]](#default_journey) | `http://foo.bar/journey1.csv,http://foo.bar/journey2.csv` |
 
 <a id="default_station"></a>[1] `https://opendata.arcgis.com/datasets/726277c507ef4914b0aec3cbcfcbfafc_0.csv`
 
@@ -110,30 +114,25 @@ overriding using environment variables (like Spring does) but these are explicit
 
 ## Used technologies
 
-* Framework: Micronaut
-    * Wanted to see how these new AOT focused frameworks do. Original inspiration came from when I was running a
-      different project's Spring Boot backend on a free deployment at Render.com, and it took 5 minutes to start the
-      container. Obviously the free tier had very limited resources but still.
+* Framework: Spring Boot. Fairly known and used (plus managed to use code generation from OpenAPI specs fairly easily).
+    * Started off using Micronaut since I wanted to see how these new AOT focused frameworks do. Original motivation came from when I was running a different project's Spring Boot backend on a free deployment at Render.com, and it took 5 minutes to start the container. Obviously the free tier had very limited resources but still. However, Micronaut seemed to not get traction, and I wanted to explore other options.
+    * Tried to transition to Quarkus, but I also wanted API Interface / Controller code generation from OpenAPI specs. This ended up being a deepish rabbit hole with no solution in sight that would not require some string replacement "hacks" in order to create compilable classes. So basically I could not find a suitable generator that would work with a modern Quarkus version. (jaxrs-spec OpenAPI server generator)[https://openapi-generator.tech/docs/generators/jaxrs-spec] came close but that's still on `javax` namespace with no working option to use `jakarta`, so still not compatible.
+* "API first" for code-generation (not really a technology).
+    * I'd argue that it's usually beneficial to tie the API specification to the actual code programmatically. It's much harder for the implementation to differ from the API spec when you have this connection, one way or other. Generating the API from code seemed to be straight-forward in simple cases, but actually writing the API descriptions etc. using annotations was exhausting work. So that's the motivation for generating code from the API.
 * Build/tooling: Gradle
     * Mostly familiar with this one vs maven
 * Language: Kotlin
     * I just like it :)
-* Database: PostgreSQL
-* DB access: jOOQ
-    * Allowed writing the statistic queries in a somewhat reasonable manner: Jdbi seemed too manual and JPA/Hibernate an
-      overkill
+* Database: PostgreSQL. I've worked mostly with this RDBMS, and haven't really found a reason to explore other options.
+* DB mapping/access: jOOQ
+    * JPA/Hibernate didn't seem particularly useful here as we're not using any complex relationships between entities. The more complex statistics queries would need to be written in SQL anyway.
+    * Jdbi 3 was an option, but seemed like too much manual SQL. 
+    * jOOQ gives the option to write the queries "in code" rather than just SQL strings. I like the option, at least for this single-person project.
 * Migrations: Flyway
+    * Fairly commonly used. No particular reason other than that. Liquibase would probably be the most common alternative, but haven't used it.
 * Code quality / static analysis: detekt, Spotless
 * Test coverage: JaCoCo
 
 ## TODOs
 
-* Use single testcontainer for all the tests. Even though running the full application is fast (compared to Spring), the
-  database container is adding some overhead.
-* Enable strict checking for nullable query params when the option becomes available,
-  see [micronaut issue 5135](https://github.com/micronaut-projects/micronaut-core/issues/5135)
-* Switch to abstract controller/interface generation from OpenAPI specs when a suitable code generator supports Jakarta
-  EE
-  annotations. Annotation based API writing is getting
-  ridiculous. [java-micronaut-server](https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/java-micronaut-server.md)
-  generator has the `useJakartaEe` setting, but it's not implemented.
+* ???

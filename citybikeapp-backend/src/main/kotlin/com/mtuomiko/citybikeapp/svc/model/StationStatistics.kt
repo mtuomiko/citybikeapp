@@ -8,5 +8,5 @@ class StationStatistics(
     val departureAverageDistance: Double,
     val arrivalAverageDistance: Double,
     val topStationsForArrivingHere: List<TopStation>,
-    val topStationsForDepartingTo: List<TopStation>
+    val topStationsForDepartingTo: List<TopStation>,
 )

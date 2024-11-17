@@ -1,0 +1,3 @@
+spring:
+  main:
+    web-application-type: "none" # don't even attempt to serve anything when in dataloader mode

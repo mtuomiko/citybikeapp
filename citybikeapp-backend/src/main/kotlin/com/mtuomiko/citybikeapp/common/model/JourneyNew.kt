@@ -8,5 +8,5 @@ data class JourneyNew(
     val departureStationId: Int,
     val arrivalStationId: Int,
     val distance: Int,
-    val duration: Int
+    val duration: Int,
 )

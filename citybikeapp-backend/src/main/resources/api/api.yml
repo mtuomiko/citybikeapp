@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: City Bike App API
-  version: 0.0.10a
+  version: 1.0.0
 paths:
   /health:
     get:
@@ -51,20 +51,18 @@ paths:
           - arrivalAt
           - distance
           - duration
-      - name: direction
+      - name: sort
         in: query
         description: Sort results in this direction
         schema:
-          type: string
-          default: desc
-          enum:
-          - asc
-          - desc
+          $ref: '#/components/schemas/Direction'
       - name: pageSize
         in: query
         description: Limit amount of results. Can be limited by application configuration.
         schema:
-          type: number
+          type: integer
+          format: int32
+          nullable: true
       - name: nextCursor
         in: query
         description: "Cursor to fetch the next page. Can expose some implementation\
@@ -183,22 +181,20 @@ paths:
           format: int32
       - name: from
         in: query
-        description: Earliest moment in time to include in statistics. Timestamp without
-          timezone. Will be interpreted as local Helsinki time internally.
+        description: Earliest moment in time to include in statistics. ISO8601 timestamp with or without offset.
         schema:
           type: string
-          format: timestamp without time zone
+          format: date-time
           nullable: true
-          example: 2023-01-29T13:47:51
+          example: 2023-01-29T13:47:51Z
       - name: to
         in: query
-        description: Latest moment in time to include in statistics. Timestamp without
-          timezone. Will be interpreted as local Helsinki time internally.
+        description: Latest moment in time to include in statistics. ISO8601 timestamp with or without offset.
         schema:
           type: string
-          format: timestamp without time zone
+          format: date-time
           nullable: true
-          example: 2023-01-29T13:47:51
+          example: 2023-01-29T13:47:51Z
       responses:
         "200":
           description: getStationStatistics 200 response
@@ -265,13 +261,19 @@ components:
         id:
           type: string
         departureAt:
+          description: Timestamp of departure in ISO8601. Offset always UTC, client responsible for representing 
+            timezone (always Helsinki currently).
           type: string
           format: date-time
           nullable: false
+          example: 2020-02-03T11:00:00Z
         arrivalAt:
+          description: Timestamp of departure in ISO8601. Offset always UTC, client responsible for representing
+            timezone (always Helsinki currently).
           type: string
           format: date-time
           nullable: false
+          example: 2020-02-03T11:00:00Z
         departureStationId:
           type: string
         arrivalStationId:
@@ -477,3 +479,9 @@ components:
         journeyCount:
           type: integer
           format: int64
+    Direction:
+      type: string
+      default: desc
+      enum:
+        - asc
+        - desc

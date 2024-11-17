@@ -14,7 +14,7 @@ import java.time.ZoneId
 class StationServiceTest {
     private val stationDao = mockk<StationDao>()
     private val statisticsDao = mockk<StatisticsDao>()
-    private val paginationConfig = mockk<PaginationConfig>()
+    private val paginationConfig = mockk<SvcConfig>()
     private val stationService = StationService(stationDao, statisticsDao, paginationConfig)
     private val timezone = ZoneId.of("Europe/Helsinki")
 
@@ -30,14 +30,14 @@ class StationServiceTest {
             statisticsDao.getJourneyStatisticsByStationId(
                 capture(intCaptor),
                 capture(instantCaptor),
-                capture(instantCaptor)
+                capture(instantCaptor),
             )
         } returns mockk(relaxed = true)
         coEvery {
             statisticsDao.getTopStationsByStationId(
                 capture(intCaptor),
                 capture(instantCaptor),
-                capture(instantCaptor)
+                capture(instantCaptor),
             )
         } returns mockk(relaxed = true)
 

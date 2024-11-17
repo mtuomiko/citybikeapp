@@ -1,5 +1,7 @@
 package com.mtuomiko.citybikeapp
 
-enum class Environments(val id: String) {
-    PROD("prod")
+enum class Environments(
+    val id: String,
+) {
+    PROD("prod"),
 }
