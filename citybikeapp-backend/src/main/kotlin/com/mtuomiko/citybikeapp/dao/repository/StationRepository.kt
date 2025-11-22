@@ -22,6 +22,13 @@ import java.security.InvalidParameterException
 import java.time.Instant
 import java.time.InstantSource
 
+/**
+ * Generic note about Kotlin null handling and jOOQ: in some places we use the Kotlin not-null assertion (!!) since it's
+ * guaranteed that the data is available (and we don't want to deal with null uncertainty elsewhere), but it's
+ * impossible for jOOQ to give us that information (that it's not null). Based on the queries generated and the database
+ * schema we, as developers (or I really, but anyway) can say that if there are results, they will have those fields as
+ * non-null.
+ */
 @Suppress("TooManyFunctions") // Repository class, I'm okay with this
 @Repository
 class StationRepository(
@@ -148,32 +155,21 @@ class StationRepository(
         limit: Int,
         offset: Int,
     ): List<StationSearchResult> {
-        val matchCount = count().`as`("match_count")
-
-        // match count has the highest priority of sort in results
         val orderFields = getOrderFields(orderBy, descending)
-        orderFields.addFirst(matchCount.desc())
 
-        val searchable = // form a concatenated string of station info to search against
-            lower(
-                concat(
-                    STATION.NAME_FINNISH,
-                    inline(" "),
-                    STATION.ADDRESS_FINNISH,
-                    inline(" "),
-                    STATION.NAME_SWEDISH,
-                    inline(" "),
-                    STATION.ADDRESS_SWEDISH,
-                    inline(" "),
-                    STATION.NAME_ENGLISH,
-                ),
+        // Form a concat string field of station info to search against. Not using other languages since not displayed.
+        val searchable = lower(
+            concat(
+                STATION.NAME_FINNISH,
+                inline(" "),
+                STATION.ADDRESS_FINNISH
             )
-        val lowercasePattern = pattern.lowercase() // and use the search pattern only as lowercase (easier)
-        val matchCountTable = table("regexp_matches({0}, {1}, 'g')", searchable, DSL.`val`(lowercasePattern))
+        )
+
+        val lowercasePattern = pattern.lowercase() // just handle as lowercase, easier
 
         return ctx
             .select(
-                field("match_count"),
                 count().over(),
                 STATION.ID,
                 STATION.NAME_FINNISH,
@@ -181,25 +177,21 @@ class StationRepository(
                 STATION.CITY_FINNISH,
                 STATION.OPERATOR,
                 STATION.CAPACITY,
-            ).from(
-                STATION,
-                lateral(
-                    select(matchCount).from(matchCountTable),
-                ),
-            ).where(searchable.likeRegex(lowercasePattern))
+            ).from(STATION)
+            .where(searchable.likeRegex(lowercasePattern))
             .orderBy(orderFields)
             .limit(limit)
             .offset(offset)
             .fetch()
             .map {
                 StationSearchResult(
-                    totalCount = it.component2(),
-                    id = it.component3()!!,
-                    nameFinnish = it.component4()!!,
-                    addressFinnish = it.component5()!!,
-                    cityFinnish = it.component6()!!,
-                    operator = it.component7()!!,
-                    capacity = it.component8()!!,
+                    totalCount = it.component1(),
+                    id = it.component2()!!,
+                    nameFinnish = it.component3()!!,
+                    addressFinnish = it.component4()!!,
+                    cityFinnish = it.component5()!!,
+                    operator = it.component6()!!,
+                    capacity = it.component7()!!,
                 )
             }
     }
@@ -240,7 +232,7 @@ class StationRepository(
     }
 
     /**
-     * Intrinsic sort by ID if nothing else available. Any other orderBy will be used.
+     * Intrinsic sort by ID if nothing else available. Any other orderBy will be used additionally.
      */
     private fun getOrderFields(
         orderBy: String,
