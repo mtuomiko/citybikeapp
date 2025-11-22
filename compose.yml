@@ -30,6 +30,13 @@ services:
       - DATABASE_CONNECTION_PASSWORD
     depends_on:
      - db
+    healthcheck:
+      # wget is available from the eclipse-temurin alpine image, so using that
+      test: wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+      interval: 15s
+      timeout: 5s
+      start_period: 10s
+
   dataloader:
     image: mtuomiko/citybikeapp-backend
     environment:
@@ -38,8 +45,12 @@ services:
       - DATABASE_CONNECTION_USERNAME
       - DATABASE_CONNECTION_PASSWORD
     depends_on:
-     - backend
-     - db
+      backend:
+        # Haven't seen real issues, but nicer to let only a single instance attempt to do flyway migration stuff.
+        # So idea is that backend starts first, completes DB migration, and only afterwards dataloader instance runs.
+        condition: service_healthy
+      db:
+        condition: service_started
     profiles:
      - dataloader
   db:

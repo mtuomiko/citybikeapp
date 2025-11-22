@@ -20,7 +20,7 @@ a `typescript-axios` client that contains all the backend API responses and thei
 to the backend OpenAPI specification file. In this monorepo, we can it access directly from backend directory during 
 development.
 
-In image build process for local docker-compose setup (see [Dockerfile.frontend](../docker/Dockerfile.frontend)), the 
+In image build process for local docker compose setup (see [Dockerfile.frontend](../docker/Dockerfile.frontend)), the 
 code is generated using a separate `openapitools/openapi-generator-cli` image.
 
 ## NPM commands

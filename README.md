@@ -16,19 +16,19 @@ see [citybikeapp-frontend](citybikeapp-frontend/) and [citybikeapp-backend](city
 ### With Docker Compose
 
 This requires Java JDK 21, a Docker host, Docker Compose and local port `8080` to be available on the host machine.
-You can change the port in [docker-compose.local.yml](docker-compose.local.yml).
+You can change the port in [compose.yml](compose.yml).
 
 1. Build backend
     * Windows: run `.\citybikeapp-backend\gradlew.bat -p .\citybikeapp-backend\ build` at project root
     * Other: run `./citybikeapp-backend/gradlew -p ./citybikeapp-backend build` at project root
-2. Run the local docker-compose setup.
-    * Run `docker compose -f docker-compose.local.yml --env-file docker/.env.local --profile dataloader up` at project 
+2. Run the local docker compose setup.
+    * Run `docker compose --env-file docker/.env.local --profile dataloader up` at project 
       root
     * Wait for the station and journey data loading to complete, or don't, the application should be available before 
       the loading completes.
 3. City Bike App is found at [http://localhost:8080](http://localhost:8080) 
 
-You can pull down the compose setup with `docker-compose -f docker-compose.local.yml down`
+You can pull down the compose setup with `docker compose down`
 
 ## Functionality
 
@@ -87,7 +87,7 @@ You can pull down the compose setup with `docker-compose -f docker-compose.local
 
 * ~~Endpoints to store new journeys data or new bicycle stations~~
 * Running backend in Docker ✅
-  * With a local docker-compose setup for whole project
+  * With a local Docker Compose setup for whole project
 * ~~Running backend in Cloud~~
 * Implement E2E tests ✅
   * Limited tests (see [e2e folder](e2e/)) but the setup exists and is being used on Github Actions. Gives some 
