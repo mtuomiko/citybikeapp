@@ -2,14 +2,29 @@ import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { Link as ReactRouterLink } from "react-router-dom";
 import { TableContainer, Table, Text, Thead, Tr, Th, Tbody, Td, Link, Button, Box, Input, HStack } from "@chakra-ui/react";
 import debounce from "lodash/debounce";
+import { TriangleDownIcon, TriangleUpIcon } from "@chakra-ui/icons";
 import { Station } from "generated";
-import stationService from "service/station";
+import stationService, { StationOrderBy } from "service/station";
+import { DirectionEnum } from "enums";
+
+interface Header { displayTitle: string, orderBy?: StationOrderBy };
+const headers: Header[] = [
+  { displayTitle: "Name", orderBy: "nameFinnish" },
+  { displayTitle: "Street address", orderBy: "addressFinnish" },
+  { displayTitle: "City", orderBy: "cityFinnish" },
+  { displayTitle: "Operator", orderBy: "operator" },
+  { displayTitle: "Capacity", orderBy: "capacity" }
+];
 
 const StationList = () => {
   const [parameters, setParameters] = useState<{
+    orderBy: StationOrderBy | null
+    ascending: boolean | null
     search: string
     page: number
   }>({
+    orderBy: null,
+    ascending: null,
     search: "",
     page: 0
   });
@@ -19,6 +34,8 @@ const StationList = () => {
   useEffect(() => {
     const getStations = async () => {
       const response = await stationService.getStations({
+        orderBy: parameters.orderBy,
+        direction: (parameters.ascending === true) ? DirectionEnum.Ascending : DirectionEnum.Descending,
         search: parameters.search,
         page: parameters.page,
         pageSize: undefined
@@ -36,9 +53,13 @@ const StationList = () => {
   }, [parameters]);
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setParameters({
-      search: e.target.value,
-      page: 0
+    setParameters((prevValue) => {
+      return {
+        orderBy: prevValue.orderBy,
+        ascending: prevValue.ascending,
+        search: e.target.value,
+        page: 0
+      };
     });
   };
 
@@ -53,6 +74,45 @@ const StationList = () => {
     }));
   };
 
+  const handleOrderByClick = (orderBy: StationOrderBy) => {
+    if (parameters.orderBy === orderBy) {
+      setParameters(parameters => ({ ...parameters, ascending: !(parameters.ascending ?? false) }));
+    } else {
+      setParameters(parameters => ({ ...parameters, orderBy }));
+    }
+  };
+
+  const createOrderByIcon = (orderBy?: StationOrderBy) => {
+    if (orderBy === null || parameters.orderBy !== orderBy) return null;
+
+    return (parameters.ascending === true)
+      ? <TriangleUpIcon />
+      : <TriangleDownIcon />;
+  };
+
+  const createColumnHeader = (header: Header) => {
+    const orderBy = header.orderBy;
+    const currentOrderByIcon = createOrderByIcon(orderBy);
+    const iconProp = (currentOrderByIcon === null) ? {} : { rightIcon: currentOrderByIcon };
+    const element = (orderBy !== undefined)
+      ? <Button
+        {...iconProp}
+        onClick={() => { handleOrderByClick(orderBy); }}
+      >{header.displayTitle}</Button>
+      : <Box>{header.displayTitle}</Box>;
+    return <Th key={header.displayTitle}>{element}</Th>;
+  };
+
+  const createTableHeaders = () => {
+    return (
+      <Thead>
+        <Tr>
+          {headers.map(header => createColumnHeader(header))}
+        </Tr>
+      </Thead>
+    );
+  };
+
   return (
     <Box m="2">
       <HStack>
@@ -65,15 +125,7 @@ const StationList = () => {
       </HStack>
       <TableContainer>
         <Table>
-          <Thead>
-            <Tr>
-              <Th>Name</Th>
-              <Th>Street address</Th>
-              <Th>City</Th>
-              <Th>Operator</Th>
-              <Th>Capacity</Th>
-            </Tr>
-          </Thead>
+          {createTableHeaders()}
           <Tbody data-cy="station-list-table-body">
             {stations.map(station => (
               <Tr key={station.id}>

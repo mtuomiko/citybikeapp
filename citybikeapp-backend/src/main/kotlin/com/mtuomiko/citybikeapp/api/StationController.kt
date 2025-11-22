@@ -12,14 +12,15 @@ import com.mtuomiko.citybikeapp.gen.model.StationsLimitedResponse
 import com.mtuomiko.citybikeapp.gen.model.StationsResponse
 import com.mtuomiko.citybikeapp.gen.model.StatisticsResponse
 import com.mtuomiko.citybikeapp.svc.StationService
+import com.mtuomiko.citybikeapp.svc.model.Direction
+import com.mtuomiko.citybikeapp.svc.model.StationQueryParameters
 import com.mtuomiko.citybikeapp.svc.model.StationStatistics
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
+import com.mtuomiko.citybikeapp.gen.model.Direction as APIDirection
 import com.mtuomiko.citybikeapp.gen.model.Station as APIStation
 import com.mtuomiko.citybikeapp.gen.model.StationDetails as APIStationDetails
 import com.mtuomiko.citybikeapp.gen.model.StationLimited as APIStationLimited
@@ -70,6 +71,8 @@ class StationController(
     }
 
     override fun getStations(
+        orderBy: String?,
+        sort: APIDirection,
         search: String?,
         page: Int?,
         pageSize: Int?,
@@ -86,7 +89,16 @@ class StationController(
         if (page != null && page < 0) throw BadRequestError("page cannot be negative")
         if (pageSize != null && pageSize < 0) throw BadRequestError("pageSize cannot be negative")
 
-        val stations = stationService.getStations(searchTokens, page, pageSize)
+        val params =
+            StationQueryParameters(
+                orderBy,
+                Direction.valueOf(sort.value.uppercase()),
+                searchTokens,
+                page,
+                pageSize,
+            )
+
+        val stations = stationService.getStations(params)
 
         val returnContent =
             StationsResponse(
@@ -95,15 +107,6 @@ class StationController(
             )
 
         return ResponseEntity.ok(returnContent)
-    }
-
-    private fun validateDates(
-        fromDate: LocalDateTime?,
-        toDate: LocalDateTime?,
-    ) {
-        val fromInstant = fromDate?.toInstant(ZoneOffset.UTC)
-        val toInstant = toDate?.toInstant(ZoneOffset.UTC)
-        validateDates(fromInstant, toInstant)
     }
 
     private fun validateDates(

@@ -5,6 +5,8 @@ import com.mtuomiko.citybikeapp.common.model.Station
 import com.mtuomiko.citybikeapp.common.model.TotalPagesWith
 import com.mtuomiko.citybikeapp.dao.StationDao
 import com.mtuomiko.citybikeapp.dao.StatisticsDao
+import com.mtuomiko.citybikeapp.svc.model.Direction
+import com.mtuomiko.citybikeapp.svc.model.StationQueryParameters
 import com.mtuomiko.citybikeapp.svc.model.StationStatistics
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
@@ -24,14 +26,12 @@ class StationService(
 
     fun getAllStationsLimited() = stationDao.getAllStationsLimited()
 
-    fun getStations(
-        searchTokens: List<String>,
-        page: Int?,
-        pageSize: Int?,
-    ): TotalPagesWith<List<Station>> {
-        val validPage = page ?: 0
-        val maxLimitedPageSize = svcConfig.getMaxLimitedPageSize(pageSize)
-        return stationDao.getStations(searchTokens, validPage, maxLimitedPageSize)
+    fun getStations(params: StationQueryParameters): TotalPagesWith<List<Station>> {
+        val orderBy = params.orderBy ?: "id"
+        val descending = params.direction != Direction.DESC
+        val validPage = params.page ?: 0
+        val maxLimitedPageSize = svcConfig.getMaxLimitedPageSize(params.pageSize)
+        return stationDao.getStations(orderBy, descending, params.searchTokens, validPage, maxLimitedPageSize)
     }
 
     fun getStationStatistics(
@@ -46,12 +46,19 @@ class StationService(
         return getStationStatistics(stationId, fromInstant, toInstant)
     }
 
+    /**
+     * Statistics result is done using two separate queries which can be run in parallel (one does not depend on the
+     * results of the other). Working with Kotlin coroutines just as a test, no real data for performance benefits.
+     *
+     * runBlocking bridges between blocking non-coroutine regular scope and CoroutineScope.
+     */
     fun getStationStatistics(
         stationId: Int,
         from: Instant?,
         to: Instant?,
     ): StationStatistics =
         runBlocking {
+            this.coroutineContext
             val deferredStatistics = async { statisticsDao.getJourneyStatisticsByStationId(stationId, from, to) }
             val deferredTopStationsResult = async { statisticsDao.getTopStationsByStationId(stationId, from, to) }
 

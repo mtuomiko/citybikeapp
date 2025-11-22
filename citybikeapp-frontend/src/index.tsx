@@ -4,9 +4,9 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import App from "App";
 import StationDetailsView from "components/StationDetailsView";
-import StationList from "components/StationList";
 import JourneyList from "components/JourneyList";
 import { StationsLimitedProvider } from "contexts/StationsLimitedContext";
+import StationList from "components/StationList";
 
 const router = createBrowserRouter([
   {

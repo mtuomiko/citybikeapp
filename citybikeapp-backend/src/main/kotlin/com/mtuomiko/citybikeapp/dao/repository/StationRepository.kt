@@ -7,6 +7,7 @@ import com.mtuomiko.citybikeapp.dao.model.StationSearchResult
 import com.mtuomiko.citybikeapp.jooq.tables.records.StationRecord
 import com.mtuomiko.citybikeapp.jooq.tables.references.STATION
 import org.jooq.DSLContext
+import org.jooq.SortField
 import org.jooq.impl.DSL
 import org.jooq.impl.DSL.concat
 import org.jooq.impl.DSL.count
@@ -17,6 +18,7 @@ import org.jooq.impl.DSL.lower
 import org.jooq.impl.DSL.select
 import org.jooq.impl.DSL.table
 import org.springframework.stereotype.Repository
+import java.security.InvalidParameterException
 import java.time.Instant
 import java.time.InstantSource
 
@@ -135,17 +137,24 @@ class StationRepository(
         )
 
     /**
-     * trgm_ops (gin/gist) indexing (for speeding up regex matching) is not setup as of V002 of migrations, since the
-     * amount of station rows is in practice fairly small and planner will not use the index. Also, said indexing cannot
-     * not be used for pagination as match count depends on the search pattern.
+     * trgm_ops (gin/gist) indexing for speeding up regex matching was considered but is not setup, since the amount of
+     * station rows is small and at least postgres 15.6 planner will not use the index. Also, said indexing cannot be
+     * used for pagination as match count (variable representing how "good" the match is) depends on the search pattern.
      */
     fun searchUsingRegex(
         pattern: String,
+        orderBy: String,
+        descending: Boolean,
         limit: Int,
         offset: Int,
     ): List<StationSearchResult> {
         val matchCount = count().`as`("match_count")
-        val searchable =
+
+        // match count has the highest priority of sort in results
+        val orderFields = getOrderFields(orderBy, descending)
+        orderFields.addFirst(matchCount.desc())
+
+        val searchable = // form a concatenated string of station info to search against
             lower(
                 concat(
                     STATION.NAME_FINNISH,
@@ -159,7 +168,8 @@ class StationRepository(
                     STATION.NAME_ENGLISH,
                 ),
             )
-        val matchCountTable = table("regexp_matches({0}, {1}, 'g')", searchable, DSL.`val`(pattern))
+        val lowercasePattern = pattern.lowercase() // and use the search pattern only as lowercase (easier)
+        val matchCountTable = table("regexp_matches({0}, {1}, 'g')", searchable, DSL.`val`(lowercasePattern))
 
         return ctx
             .select(
@@ -176,8 +186,8 @@ class StationRepository(
                 lateral(
                     select(matchCount).from(matchCountTable),
                 ),
-            ).where(searchable.likeRegex(pattern))
-            .orderBy(matchCount.desc(), STATION.ID.asc())
+            ).where(searchable.likeRegex(lowercasePattern))
+            .orderBy(orderFields)
             .limit(limit)
             .offset(offset)
             .fetch()
@@ -195,10 +205,14 @@ class StationRepository(
     }
 
     fun listStations(
+        orderBy: String,
+        descending: Boolean,
         limit: Int,
         offset: Int,
-    ): List<StationSearchResult> =
-        ctx
+    ): List<StationSearchResult> {
+        val orderFields = getOrderFields(orderBy, descending)
+
+        return ctx
             .select(
                 count().over(),
                 STATION.ID,
@@ -208,7 +222,7 @@ class StationRepository(
                 STATION.OPERATOR,
                 STATION.CAPACITY,
             ).from(STATION)
-            .orderBy(STATION.ID.asc())
+            .orderBy(orderFields)
             .limit(limit)
             .offset(offset)
             .fetch()
@@ -223,4 +237,43 @@ class StationRepository(
                     capacity = it.component7()!!,
                 )
             }
+    }
+
+    /**
+     * Intrinsic sort by ID if nothing else available. Any other orderBy will be used.
+     */
+    private fun getOrderFields(
+        orderBy: String,
+        descending: Boolean,
+    ): MutableList<SortField<out Any?>> =
+        if (descending) {
+            if (orderBy == "id") {
+                mutableListOf(STATION.ID.desc())
+            } else {
+                mutableListOf(getStationField(orderBy).desc(), STATION.ID.desc())
+            }
+        } else {
+            if (orderBy == "id") {
+                mutableListOf(STATION.ID.asc())
+            } else {
+                mutableListOf(getStationField(orderBy).asc(), STATION.ID.asc())
+            }
+        }
+
+    /**
+     *
+     */
+    private fun getStationField(field: String) =
+        with(STATION) {
+            when (field) {
+                "id" -> ID
+                "nameFinnish" -> NAME_FINNISH
+                "addressFinnish" -> ADDRESS_FINNISH
+                "cityFinnish" -> CITY_FINNISH
+                "operator" -> OPERATOR
+                "capacity" -> CAPACITY
+
+                else -> throw InvalidParameterException("unknown station field: $field")
+            }
+        }
 }
