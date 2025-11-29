@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: City Bike App API
-  version: 1.0.0
+  version: 1.0.1
 paths:
   /health:
     get:
@@ -88,10 +88,27 @@ paths:
         \ size parameter. If page size is not defined then application default is\
         \ used. Page number can be provided to paginate results. Optional search string\
         \ can be used to limit matches. Note that if paginating query params result\
-        \ in no stations, the total pages count might not hold true! That is, there\
+        \ in no stations at all, the total pages count might not hold true! That is, there\
         \ could still be possible earlier results."
       operationId: getStations
       parameters:
+      - name: orderBy
+        in: query
+        description: Sort results by this property
+        schema:
+          type: string
+          nullable: true
+          enum:
+            - nameFinnish
+            - addressFinnish
+            - cityFinnish
+            - operator
+            - capacity
+      - name: sort
+        in: query
+        description: Sort results in this direction
+        schema:
+          $ref: '#/components/schemas/Direction'
       - name: search
         in: query
         description: Optional search string to limit station results. Will look for
@@ -481,6 +498,7 @@ components:
           format: int64
     Direction:
       type: string
+      nullable: true
       default: desc
       enum:
         - asc
