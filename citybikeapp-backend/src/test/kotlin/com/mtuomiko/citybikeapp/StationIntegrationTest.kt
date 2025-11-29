@@ -13,18 +13,20 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
+import org.springframework.test.web.servlet.client.RestTestClient
 import com.mtuomiko.citybikeapp.gen.model.Station as APIStation
 import com.mtuomiko.citybikeapp.gen.model.StationDetails as APIStationDetails
 import com.mtuomiko.citybikeapp.gen.model.StationLimited as APIStationLimited
 import com.mtuomiko.citybikeapp.gen.model.StationStatistics as APIStationStatistics
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureRestTestClient
 class StationIntegrationTest {
     @Autowired
-    private lateinit var testRestTemplate: TestRestTemplate
+    private lateinit var client: RestTestClient
 
     @Autowired
     lateinit var journeyRepository: JourneyRepository
@@ -58,17 +60,29 @@ class StationIntegrationTest {
 
     @Test
     fun `All stations with limited information endpoint responds successfully`() {
-        val response = testRestTemplate.getForEntity("/station/limited", StationsLimitedResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/station/limited")
+                .exchange()
+                .expectBody(StationsLimitedResponse::class.java)
+                .returnResult()
         val expected = stationRepository.findAll().map { APIStationLimited(it.id.toString(), it.nameFinnish) }
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.stations).hasSize(testStations.size)
-        assertThat(response.body!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.responseBody!!.stations).hasSize(testStations.size)
+        assertThat(response.responseBody!!.stations).containsExactlyInAnyOrderElementsOf(expected)
     }
 
     @Test
     fun `Single station endpoint responds with station details`() {
         val testStation = testStations.last()
-        val response = testRestTemplate.getForEntity("/station/${testStation.id}", StationDetailsResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/station/${testStation.id}")
+                .exchange()
+                .expectBody(StationDetailsResponse::class.java)
+                .returnResult()
 
         val expectedStationsDetails =
             with(testStation) {
@@ -88,13 +102,19 @@ class StationIntegrationTest {
                 )
             }
 
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.station).isEqualTo(expectedStationsDetails)
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.responseBody!!.station).isEqualTo(expectedStationsDetails)
     }
 
     @Test
     fun `Stations endpoint can be used without params and response uses default pagination`() {
-        val response = testRestTemplate.getForEntity("/station", StationsResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/station")
+                .exchange()
+                .expectBody(StationsResponse::class.java)
+                .returnResult()
 
         val expected =
             testStations
@@ -102,14 +122,20 @@ class StationIntegrationTest {
                 .take(svcConfig.defaultPageSize)
                 .map { it.toApi() }
 
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.stations).containsExactlyInAnyOrderElementsOf(expected)
-        assertThat(response.body!!.meta.totalPages).isEqualTo(4)
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.responseBody!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.responseBody!!.meta.totalPages).isEqualTo(4)
     }
 
     @Test
     fun `Stations endpoint can be used with search term and response uses default pagination`() {
-        val response = testRestTemplate.getForEntity("/station?search=toinen", StationsResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/station?search=toinen")
+                .exchange()
+                .expectBody(StationsResponse::class.java)
+                .returnResult()
 
         val expected =
             testStations
@@ -118,14 +144,20 @@ class StationIntegrationTest {
                 .take(svcConfig.defaultPageSize)
                 .map { it.toApi() }
 
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.stations).containsExactlyInAnyOrderElementsOf(expected)
-        assertThat(response.body!!.meta.totalPages).isEqualTo(2)
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.responseBody!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.responseBody!!.meta.totalPages).isEqualTo(2)
     }
 
     @Test
     fun `Stations endpoint can be used with upper case search term and response finds non-exact-case matches`() {
-        val response = testRestTemplate.getForEntity("/station?search=PaIkKa", StationsResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/station?search=PaIkKa")
+                .exchange()
+                .expectBody(StationsResponse::class.java)
+                .returnResult()
 
         val expected =
             testStations
@@ -134,14 +166,20 @@ class StationIntegrationTest {
                 .take(svcConfig.defaultPageSize)
                 .map { it.toApi() }
 
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.stations).containsExactlyInAnyOrderElementsOf(expected)
-        assertThat(response.body!!.meta.totalPages).isEqualTo(4)
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.responseBody!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.responseBody!!.meta.totalPages).isEqualTo(4)
     }
 
     @Test
     fun `Stations endpoint can be used with page number and response uses default pagination`() {
-        val response = testRestTemplate.getForEntity("/station?page=1", StationsResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/station?page=1")
+                .exchange()
+                .expectBody(StationsResponse::class.java)
+                .returnResult()
 
         val expected =
             testStations
@@ -150,14 +188,20 @@ class StationIntegrationTest {
                 .take(svcConfig.defaultPageSize)
                 .map { it.toApi() }
 
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.stations).containsExactlyInAnyOrderElementsOf(expected)
-        assertThat(response.body!!.meta.totalPages).isEqualTo(4)
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.responseBody!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.responseBody!!.meta.totalPages).isEqualTo(4)
     }
 
     @Test
     fun `Stations endpoint can be used with search term and page number and response uses default pagination`() {
-        val response = testRestTemplate.getForEntity("/station?search=toinen&page=1", StationsResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/station?search=toinen&page=1")
+                .exchange()
+                .expectBody(StationsResponse::class.java)
+                .returnResult()
 
         val expected =
             testStations
@@ -167,15 +211,21 @@ class StationIntegrationTest {
                 .take(svcConfig.defaultPageSize)
                 .map { it.toApi() }
 
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.stations).containsExactlyInAnyOrderElementsOf(expected)
-        assertThat(response.body!!.meta.totalPages).isEqualTo(2)
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.responseBody!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.responseBody!!.meta.totalPages).isEqualTo(2)
     }
 
     @Test
     fun `Stations endpoint can be used with search term and page size`() {
         val pageSize = 25
-        val response = testRestTemplate.getForEntity("/station?search=toinen&pageSize=$pageSize", StationsResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/station?search=toinen&pageSize=$pageSize")
+                .exchange()
+                .expectBody(StationsResponse::class.java)
+                .returnResult()
 
         val expected =
             testStations
@@ -184,16 +234,22 @@ class StationIntegrationTest {
                 .take(pageSize)
                 .map { it.toApi() }
 
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.stations).containsExactlyInAnyOrderElementsOf(expected)
-        assertThat(response.body!!.meta.totalPages).isEqualTo(4)
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.responseBody!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.responseBody!!.meta.totalPages).isEqualTo(4)
     }
 
     @Test
     fun `Stations endpoint can be used with search term, page number and page size`() {
         val page = 2
         val pageSize = 25
-        val response = testRestTemplate.getForEntity("/station?search=toinen&page=$page&pageSize=$pageSize", StationsResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/station?search=toinen&page=$page&pageSize=$pageSize")
+                .exchange()
+                .expectBody(StationsResponse::class.java)
+                .returnResult()
 
         val expected =
             testStations
@@ -203,21 +259,27 @@ class StationIntegrationTest {
                 .take(pageSize)
                 .map { it.toApi() }
 
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.stations).containsExactlyInAnyOrderElementsOf(expected)
-        assertThat(response.body!!.meta.totalPages).isEqualTo(4)
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.responseBody!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.responseBody!!.meta.totalPages).isEqualTo(4)
     }
 
     @Test
     fun `Station statistics endpoint`() {
         val testStation = testStations.last()
-        val response = testRestTemplate.getForEntity("/station/${testStation.id}/statistics", StatisticsResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/station/${testStation.id}/statistics")
+                .exchange()
+                .expectBody(StatisticsResponse::class.java)
+                .returnResult()
 
         // no journeys in test data so stats should be zero/empty
         val expectedStatistics = APIStationStatistics(0, 0, 0.0, 0.0, emptyList(), emptyList())
 
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.statistics).isEqualTo(expectedStatistics)
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.responseBody!!.statistics).isEqualTo(expectedStatistics)
     }
 
     private fun StationEntity.toApi() = APIStation(id.toString(), nameFinnish, addressFinnish, cityFinnish, operator, capacity)

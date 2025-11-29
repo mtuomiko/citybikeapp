@@ -13,7 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.jooq.JooqTest
+import org.springframework.boot.jooq.test.autoconfigure.JooqTest
 import org.springframework.context.annotation.Import
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -132,7 +132,9 @@ class JourneyRepositoryTest {
 
         val result =
             runBlocking {
-                journeyRepository.getJourneyStatisticsByStationId(testStationId, earliestIncluded, latestIncluded).await()
+                journeyRepository
+                    .getJourneyStatisticsByStationId(testStationId, earliestIncluded, latestIncluded)
+                    .await()
             }
 
         assertThat(result).isEqualTo(JourneyStatistics(10, 10, 100.0, 100.0))

@@ -8,25 +8,25 @@ buildscript {
     dependencies {
         // Don't like this, but in some way we need to provide gradle flyway script this dependency. And I couldn't
         // figure out a way to do it with a separately defined "configuration" for the flywayMigrate task.
-        classpath("org.flywaydb:flyway-database-postgresql:10.10.0")
+        classpath("org.flywaydb:flyway-database-postgresql:11.14.1")
     }
 }
 
 plugins {
-    kotlin("jvm") version "1.9.24"
-    kotlin("plugin.spring") version "1.9.24"
+    kotlin("jvm") version "2.2.21"
+    kotlin("plugin.spring") version "2.2.21"
 
-    id("org.springframework.boot") version "3.3.3"
+    id("org.springframework.boot") version "4.0.0"
     // fails with detekt kotlin version mismatch without workaround, just using spring-boot-dependencies in deps now
     // id("io.spring.dependency-management") version "1.1.6"
     id("org.openapi.generator") version "7.8.0"
-    id("org.flywaydb.flyway") version "10.10.0" // match versions with spring bom
-    id("org.jooq.jooq-codegen-gradle") version "3.19.10" // match spring jooq
+    id("org.flywaydb.flyway") version "11.14.1" // match versions with spring bom
+    id("org.jooq.jooq-codegen-gradle") version "3.19.28" // match spring jooq
 
     id("jacoco")
 
-    id("io.gitlab.arturbosch.detekt").version("1.23.6")
-    id("com.diffplug.spotless").version("6.25.0")
+    id("io.gitlab.arturbosch.detekt").version("1.23.8")
+    id("com.diffplug.spotless").version("8.1.0")
 }
 
 group = "com.mtuomiko"
@@ -43,16 +43,16 @@ repositories {
 }
 
 dependencies {
-    api(platform("org.springframework.boot:spring-boot-dependencies:3.3.3"))
+    api(platform("org.springframework.boot:spring-boot-dependencies:4.0.0"))
     api(platform("org.testcontainers:testcontainers-bom:1.20.1"))
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     implementation("org.springframework.boot:spring-boot-starter-jooq")
-    implementation("org.flywaydb:flyway-core")
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.flywaydb:flyway-database-postgresql")
 
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -65,11 +65,14 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     // spring bom not enough without version, match spring bom version. codegen requires build time driver dep
-    jooqCodegen("org.postgresql:postgresql:42.7.3")
+    jooqCodegen("org.postgresql:postgresql:42.7.8")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-restclient-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-jooq-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("io.mockk:mockk:1.13.11") // last kotlin 1.x ?
+    testImplementation("io.mockk:mockk:1.14.6")
 
     testImplementation("org.testcontainers:junit-jupiter") // from spring bom
     testImplementation("org.testcontainers:postgresql") // from spring bom
@@ -80,7 +83,7 @@ dependencies {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
+        freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
     }
 }
 
@@ -220,10 +223,10 @@ tasks.withType<Detekt>().configureEach {
 configure<SpotlessExtension> {
     kotlin {
         target("**/*.kt")
-        ktlint("1.3.1")
+        ktlint("1.7.1")
     }
     kotlinGradle {
         target("**/*.gradle.kts")
-        ktlint("1.3.1")
+        ktlint("1.7.1")
     }
 }

@@ -28,6 +28,6 @@ class DefaultExceptionHandler {
         when (error) {
             is BadRequestError -> HttpStatus.BAD_REQUEST
             is NotFoundError -> HttpStatus.NOT_FOUND
-            else -> HttpStatus.INTERNAL_SERVER_ERROR
+            // else -> HttpStatus.INTERNAL_SERVER_ERROR, add this back when needed so kotlin doesn't warn us about it
         }
 }

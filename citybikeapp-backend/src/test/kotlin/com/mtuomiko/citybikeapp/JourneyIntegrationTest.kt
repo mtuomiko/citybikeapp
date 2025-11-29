@@ -11,18 +11,20 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
+import org.springframework.test.web.servlet.client.EntityExchangeResult
+import org.springframework.test.web.servlet.client.RestTestClient
 import org.springframework.web.util.UriComponentsBuilder
 import java.time.Instant
 import com.mtuomiko.citybikeapp.gen.model.Journey as APIJourney
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureRestTestClient
 class JourneyIntegrationTest {
     @Autowired
-    private lateinit var testRestTemplate: TestRestTemplate
+    private lateinit var client: RestTestClient
 
     @Autowired
     private lateinit var journeyRepository: JourneyRepository
@@ -64,8 +66,6 @@ class JourneyIntegrationTest {
     @Test
     fun `journey endpoint returns with expected json format`() {
         // Checking the actual json string representation in case of unintentional serialization changes
-        val response = testRestTemplate.getForObject("/journey?pageSize=1&sort=asc", String::class.java)
-
         val expected =
             "{\"journeys\":[{\"id\":\"1\"," +
                 "\"departureAt\":\"2020-02-03T11:00:00Z\"," +
@@ -76,12 +76,27 @@ class JourneyIntegrationTest {
                 "\"duration\":600}" +
                 "]," +
                 "\"meta\":{\"nextCursor\":\"1580727600|1\"}}"
-        assertThat(response).isEqualTo(expected)
+
+        val response =
+            client
+                .get()
+                .uri("/journey?pageSize=1&sort=asc")
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful
+                .expectBody()
+                .json(expected)
     }
 
     @Test
     fun `Given no parameters, journey endpoint returns using default options`() {
-        val response = testRestTemplate.getForEntity("/journey", JourneysResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/journey")
+                .exchange()
+                .expectBody(JourneysResponse::class.java)
+                .returnResult()
 
         // expected default is ordered by departure timestamp, descending, i.e. latest first
         val expected =
@@ -95,7 +110,13 @@ class JourneyIntegrationTest {
 
     @Test
     fun `Given ascending parameter, journey endpoint returns in ascending order`() {
-        val response = testRestTemplate.getForEntity("/journey?sort=asc", JourneysResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/journey?sort=asc")
+                .exchange()
+                .expectBody(JourneysResponse::class.java)
+                .returnResult()
 
         val expected =
             testJourneys
@@ -108,7 +129,13 @@ class JourneyIntegrationTest {
 
     @Test
     fun `Given orderBy duration parameter, journey endpoint returns ordered by duration`() {
-        val response = testRestTemplate.getForEntity("/journey?orderBy=duration", JourneysResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/journey?orderBy=duration")
+                .exchange()
+                .expectBody(JourneysResponse::class.java)
+                .returnResult()
 
         val expected =
             testJourneys
@@ -122,7 +149,12 @@ class JourneyIntegrationTest {
     @Test
     fun `Given orderBy and ascending parameters, journey endpoint returns stations in ascending order by parameter`() {
         val response =
-            testRestTemplate.getForEntity("/journey?orderBy=duration&sort=asc", JourneysResponse::class.java)
+            client
+                .get()
+                .uri("/journey?orderBy=duration&sort=asc")
+                .exchange()
+                .expectBody(JourneysResponse::class.java)
+                .returnResult()
 
         val expected =
             testJourneys
@@ -135,7 +167,13 @@ class JourneyIntegrationTest {
 
     @Test
     fun `Given page size parameter, journey endpoint returns journeys limited by parameter`() {
-        val response = testRestTemplate.getForEntity("/journey?pageSize=5", JourneysResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/journey?pageSize=5")
+                .exchange()
+                .expectBody(JourneysResponse::class.java)
+                .returnResult()
 
         val expected =
             testJourneys
@@ -148,7 +186,13 @@ class JourneyIntegrationTest {
 
     @Test
     fun `Given too large page size parameter, journey endpoint returns journeys limited by maximum`() {
-        val response = testRestTemplate.getForEntity("/journey?pageSize=500", JourneysResponse::class.java)
+        val response =
+            client
+                .get()
+                .uri("/journey?pageSize=500")
+                .exchange()
+                .expectBody(JourneysResponse::class.java)
+                .returnResult()
 
         val expected =
             testJourneys
@@ -171,10 +215,16 @@ class JourneyIntegrationTest {
             }
             val finalUri = urlBuilder.build().toUri()
 
-            val response = testRestTemplate.getForEntity(finalUri, JourneysResponse::class.java)
-            cursor = response.body!!.meta.nextCursor
-            results.add(response.body!!.journeys)
-        } while (response.body!!.journeys.isNotEmpty() && cursor != null)
+            val response =
+                client
+                    .get()
+                    .uri(finalUri)
+                    .exchange()
+                    .expectBody(JourneysResponse::class.java)
+                    .returnResult()
+            cursor = response.responseBody!!.meta.nextCursor
+            results.add(response.responseBody!!.journeys)
+        } while (response.responseBody!!.journeys.isNotEmpty() && cursor != null)
 
         val expected =
             testJourneys
@@ -201,10 +251,16 @@ class JourneyIntegrationTest {
             }
             val finalUri = urlBuilder.build().toUri()
 
-            val response = testRestTemplate.getForEntity(finalUri, JourneysResponse::class.java)
-            cursor = response.body!!.meta.nextCursor
-            results.add(response.body!!.journeys)
-        } while (response.body!!.journeys.isNotEmpty() && cursor != null)
+            val response =
+                client
+                    .get()
+                    .uri(finalUri)
+                    .exchange()
+                    .expectBody(JourneysResponse::class.java)
+                    .returnResult()
+            cursor = response.responseBody!!.meta.nextCursor
+            results.add(response.responseBody!!.journeys)
+        } while (response.responseBody!!.journeys.isNotEmpty() && cursor != null)
 
         val expected =
             testJourneys
@@ -229,12 +285,12 @@ class JourneyIntegrationTest {
 
     private fun assertOrderedResponse(
         expected: List<APIJourney>,
-        response: ResponseEntity<JourneysResponse>,
+        response: EntityExchangeResult<JourneysResponse>,
     ) {
-        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body!!.journeys).hasSize(expected.size)
-        assertThat(response.body!!.journeys).containsExactlyElementsOf(expected)
-        assertThat(response.body!!.meta.nextCursor).isNotNull
+        assertThat(response.status).isEqualTo(HttpStatus.OK)
+        assertThat(response.responseBody!!.journeys).hasSize(expected.size)
+        assertThat(response.responseBody!!.journeys).containsExactlyElementsOf(expected)
+        assertThat(response.responseBody!!.meta.nextCursor).isNotNull
     }
 
     companion object {
