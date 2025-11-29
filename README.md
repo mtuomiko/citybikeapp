@@ -99,3 +99,4 @@ You can pull down the compose setup with `docker compose --profile dataloader do
 * Pipeline generated Swagger docs about the backend API. Hosted by Github Pages ✅
   * Available at [https://mtuomiko.github.io/citybikeapp/](https://mtuomiko.github.io/citybikeapp/)
 * API client generation for frontend using openapi-generator ✅
+* Station list sorting by some suitable fields
