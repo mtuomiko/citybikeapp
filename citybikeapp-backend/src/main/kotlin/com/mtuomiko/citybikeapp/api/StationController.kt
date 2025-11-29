@@ -80,9 +80,11 @@ class StationController(
         logger.trace { "Fetching stations with search: $search, page: $page, pageSize: $pageSize" }
 
         // '+' delimited search terms, but no reason to proceed with empty tokens (e.g. foo++bar -> foo,bar)
-        val searchTokens = search?.split('+')
-            ?.filter { it.isNotBlank() }
-            ?: emptyList()
+        val searchTokens =
+            search
+                ?.split('+')
+                ?.filter { it.isNotBlank() }
+                ?: emptyList()
         if (
             searchTokens.size > apiConfig.maxSearchTermCount ||
             searchTokens.any { it.length < apiConfig.minSearchTermLength }

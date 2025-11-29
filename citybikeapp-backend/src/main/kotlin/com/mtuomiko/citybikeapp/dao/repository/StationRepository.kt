@@ -8,15 +8,12 @@ import com.mtuomiko.citybikeapp.jooq.tables.records.StationRecord
 import com.mtuomiko.citybikeapp.jooq.tables.references.STATION
 import org.jooq.DSLContext
 import org.jooq.SortField
-import org.jooq.impl.DSL
 import org.jooq.impl.DSL.concat
 import org.jooq.impl.DSL.count
 import org.jooq.impl.DSL.field
 import org.jooq.impl.DSL.inline
-import org.jooq.impl.DSL.lateral
 import org.jooq.impl.DSL.lower
 import org.jooq.impl.DSL.select
-import org.jooq.impl.DSL.table
 import org.springframework.stereotype.Repository
 import java.security.InvalidParameterException
 import java.time.Instant
@@ -158,13 +155,14 @@ class StationRepository(
         val orderFields = getOrderFields(orderBy, descending)
 
         // Form a concat string field of station info to search against. Not using other languages since not displayed.
-        val searchable = lower(
-            concat(
-                STATION.NAME_FINNISH,
-                inline(" "),
-                STATION.ADDRESS_FINNISH
+        val searchable =
+            lower(
+                concat(
+                    STATION.NAME_FINNISH,
+                    inline(" "),
+                    STATION.ADDRESS_FINNISH,
+                ),
             )
-        )
 
         val lowercasePattern = pattern.lowercase() // just handle as lowercase, easier
 
