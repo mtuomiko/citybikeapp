@@ -33,7 +33,7 @@ const getStations = async (parameters: StationParameters): Promise<StationsRespo
   const sort = parameters.direction ?? undefined;
   const search = (parameters.search === "")
     ? undefined
-    : parameters.search.replace(" ", "+"); // API expects + separated strings
+    : parameters.search.replace(/\s+/g, "+"); // API expects + separated strings
   const response = await stationApi.getStations(orderBy, sort, search, parameters.page, undefined); // don't customize pageSize
 
   const stations = response.data.stations;
