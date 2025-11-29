@@ -75,10 +75,11 @@ const StationList = () => {
   };
 
   const handleOrderByClick = (orderBy: StationOrderBy) => {
+    // If current order by is the same, toggle ascending/descending. Always reset to page 0 on new order by.
     if (parameters.orderBy === orderBy) {
-      setParameters(parameters => ({ ...parameters, ascending: !(parameters.ascending ?? false) }));
+      setParameters(parameters => ({ ...parameters, ascending: !(parameters.ascending ?? false), page: 0 }));
     } else {
-      setParameters(parameters => ({ ...parameters, orderBy }));
+      setParameters(parameters => ({ ...parameters, orderBy, page: 0 }));
     }
   };
 
