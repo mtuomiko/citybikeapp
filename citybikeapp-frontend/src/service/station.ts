@@ -2,12 +2,16 @@ import dayjs, { extend } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { stationApi } from "clients";
-import { Station, StationStatistics } from "generated";
+import { Direction, Station, StationStatistics } from "generated";
 
 extend(utc);
 extend(timezone);
 
+export type StationOrderBy = "nameFinnish" | "addressFinnish" | "cityFinnish" | "operator" | "capacity";
+
 export interface StationParameters {
+  orderBy: StationOrderBy | null
+  direction: Direction | null
   search: string
   page: number
   pageSize?: number
@@ -25,10 +29,12 @@ export interface StatisticsParameters {
 }
 
 const getStations = async (parameters: StationParameters): Promise<StationsResponse> => {
+  const orderBy = parameters.orderBy ?? undefined;
+  const sort = parameters.direction ?? undefined;
   const search = (parameters.search === "")
     ? undefined
-    : parameters.search.replace(" ", "+"); // API expects + separated strings
-  const response = await stationApi.getStations(search, parameters.page, undefined); // don't customize pageSize
+    : parameters.search.replace(/\s+/g, "+"); // API expects + separated strings
+  const response = await stationApi.getStations(orderBy, sort, search, parameters.page, undefined); // don't customize pageSize
 
   const stations = response.data.stations;
   const moreAvailable = response.data.meta.totalPages > (parameters.page + 1);

@@ -46,7 +46,7 @@ class DataLoader : CommandLineRunner {
 
     private val reader = csvReader()
     private lateinit var validStationIds: List<Int>
-    private val charsToTrim = arrayOf(' ', ',', '"')
+    private val charsToTrim = arrayOf(' ', ',', '"') // ignore these leading or trailing chars in text-like fields
 
     override fun run(vararg args: String?) {
         //

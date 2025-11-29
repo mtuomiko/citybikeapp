@@ -23,22 +23,22 @@ wrapper script file which is `gradlew.bat` for Windows, `gradlew` otherwise.
       using `docker run -d --restart --name dev-postgres -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_DB=citybikeapp -e POSTGRES_PASSWORD=Hunter2 postgres:15`
 * Tests are run against a Testcontainers provided PostgreSQL 15
     * Docker host is required for Testcontainers. Podman should work.
-* Run dataloading using Gradle task `run` with `dataloader` Spring profile, for example
-  with `SPRING_PROFILES_ACTIVE=dataloader ./gradlew run`
+* Run dataloading using Gradle task `bootRun` with `dataloader` Spring profile, for example
+  with `SPRING_PROFILES_ACTIVE=dataloader ./gradlew bootRun`
     * If you need to use a different DB configuration, see [Environment variables](#environment-variables).
     * You could, for example, explicitly use `localhost` (default `host.docker.internal` should be equivalent) by using
       `DATABASE_CONNECTION_URL=jdbc:postgresql://localhost:5432/citybikeapp ./gradlew run`.
-        * Windows terminals need some additional wizardry to set env vars: `SET FOO=bar` or `$env:FOO='bar'`
-* Run application using Gradle task `run`, for example with `./gradlew run`
+        * Windows terminals need some additional tending to set env vars: `SET FOO=bar` or `$env:FOO='bar'`
+* Run application using Gradle task `bootRun`, for example with `./gradlew bootRun`
 * Application API will be available under http://localhost:8080/
     * See [api.yml](gen/api.yml) or [https://mtuomiko.github.io/citybikeapp/](https://mtuomiko.github.io/citybikeapp/)
       for available endpoints
 
 #### Running in container
 
-* Java 17
+* Java 21
 * PostgreSQL 15 database access
-    * jOOQ minimum supported version. Might work on older.
+    * jOOQ minimum supported version. Might work on older, I haven't tested.
 * ~300 extra MB of space on filesystem for downloading datasets
 
 ### Gradle tasks
@@ -59,19 +59,19 @@ Few relevant Gradle tasks. Run using the Gradle wrapper. For example, `./gradlew
 
 ## Data loader
 
-Application can be started in a single run data loading mode by providing the command line argument `dataloader`. In
-this mode, the actual server will not be started and the application will exit after completion.
+Application can be started in a single run data loading mode by using the Spring profile `dataloader`. In this mode, the
+actual server will not be started and the application will exit after completion.
 
 Data loader will read the provided configuration and download CSV files to batch insert their data to the database.
 Loader will only delete the used local files when running in `prod` environment. This means that downloaded data can
 remain in place, in containers also.
 
 Loader will perform simple validation and cleaning on the data. Anything not matching the assumed format or data model,
-will cause the entry to be ignored. Duplicate entries are ignored. For stations the primary key ID is pulled straight
+will cause the entry to be ignored. Duplicate entries are ignored. For stations the primary key ID is read straight
 from source CSV and subsequent INSERTs on same ID are ignored. For journeys the uniqueness in maintained by an all
 column unique constraint/index, a bit doubtful about this... (temp table on insert could work also?)
 
-Example for running data loader: `./gradlew run --args "dataloader"`
+Example for running data loader: `SPRING_PROFILES_ACTIVE=dataloader ./gradlew bootRun`
 
 ## Code generation and API generation
 
@@ -85,7 +85,7 @@ The spec isn't too pretty, API-first approach would probably be nicer and result
 ## Environment variables
 
 This table describes relevant variables when running the application in production mode. Spring allows property
-configuration by binding from environment variables, but these are explicitly configured.
+configuration by binding automatically from environment variables, but these are also explicitly configured.
 
 #### Common
 
@@ -118,9 +118,10 @@ configuration by binding from environment variables, but these are explicitly co
     * Started off using Micronaut since I wanted to see how these new AOT focused frameworks do. Original motivation came from when I was running a different project's Spring Boot backend on a free deployment at Render.com, and it took 5 minutes to start the container. Obviously the free tier had very limited resources but still. However, Micronaut seemed to not get traction, and I wanted to explore other options.
     * Tried to transition to Quarkus, but I also wanted API Interface / Controller code generation from OpenAPI specs. This ended up being a deepish rabbit hole with no solution in sight that would not require some string replacement "hacks" in order to create compilable classes. So basically I could not find a suitable generator that would work with a modern Quarkus version. (jaxrs-spec OpenAPI server generator)[https://openapi-generator.tech/docs/generators/jaxrs-spec] came close but that's still on `javax` namespace with no working option to use `jakarta`, so still not compatible.
 * "API first" for code-generation (not really a technology).
-    * I'd argue that it's usually beneficial to tie the API specification to the actual code programmatically. It's much harder for the implementation to differ from the API spec when you have this connection, one way or other. Generating the API from code seemed to be straight-forward in simple cases, but actually writing the API descriptions etc. using annotations was exhausting work. So that's the motivation for generating code from the API.
+    * I'd argue that it's usually beneficial to tie the API specification to the actual code programmatically. It's much harder for the implementation to differ from the API spec when you have this connection, one way or other. Generating the API from code seemed to be straight-forward in simple cases, but actually writing the API descriptions etc. using annotations was cumbersome. So that's the motivation for generating code from the API.
+    * It's a trade-off. I'm currently veering back towards code-first approach. It places no limitations on 
 * Build/tooling: Gradle
-    * Mostly familiar with this one vs maven
+    * Because Kotlin. Not a necessity but it's a more established choice in Kotlin-based projects.
 * Language: Kotlin
     * I just like it :)
 * Database: PostgreSQL. I've worked mostly with this RDBMS, and haven't really found a reason to explore other options.

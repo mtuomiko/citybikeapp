@@ -1,4 +1,7 @@
-logging.level.com.mtuomiko.citybikeapp: INFO
+logging:
+  level:
+    com.mtuomiko.citybikeapp: INFO
+    org.jooq.tools.LoggerListener: INFO
 
 server:
   port: ${PORT:8080}

@@ -25,17 +25,21 @@ class StationDao(
             .map { StationLimited(it.id, it.nameFinnish) }
 
     fun getStations(
+        orderBy: String,
+        descending: Boolean,
         searchTokens: List<String>,
         page: Int,
         pageSize: Int,
     ): TotalPagesWith<List<Station>> {
-        if (searchTokens.isEmpty()) return getStations(page, pageSize)
+        if (searchTokens.isEmpty()) return getStations(orderBy, descending, page, pageSize)
 
         // TODO: Escape regex or otherwise sanitize!
         val pattern = searchTokens.joinToString("|")
         val searchResult =
             stationRepository.searchUsingRegex(
                 pattern = pattern,
+                orderBy = orderBy,
+                descending = descending,
                 limit = pageSize,
                 offset = pageSize * page,
             )
@@ -51,10 +55,12 @@ class StationDao(
     }
 
     private fun getStations(
+        orderBy: String,
+        descending: Boolean,
         page: Int,
         pageSize: Int,
     ): TotalPagesWith<List<Station>> {
-        val stationsResult = stationRepository.listStations(pageSize, page * pageSize)
+        val stationsResult = stationRepository.listStations(orderBy, descending, pageSize, page * pageSize)
 
         return if (stationsResult.isEmpty()) {
             TotalPagesWith(content = emptyList(), totalPages = 1)

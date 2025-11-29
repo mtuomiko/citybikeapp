@@ -113,7 +113,7 @@ class StationIntegrationTest {
 
         val expected =
             testStations
-                .filter { it.nameFinnish.contains("toinen", ignoreCase = true) }
+                .filter { it.nameFinnish.contains("Toinen") }
                 .sortedBy { it.id }
                 .take(svcConfig.defaultPageSize)
                 .map { it.toApi() }
@@ -121,6 +121,22 @@ class StationIntegrationTest {
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
         assertThat(response.body!!.stations).containsExactlyInAnyOrderElementsOf(expected)
         assertThat(response.body!!.meta.totalPages).isEqualTo(2)
+    }
+
+    @Test
+    fun `Stations endpoint can be used with upper case search term and response finds non-exact-case matches`() {
+        val response = testRestTemplate.getForEntity("/station?search=PaIkKa", StationsResponse::class.java)
+
+        val expected =
+            testStations
+                .filter { it.nameFinnish.contains("Paikka") }
+                .sortedBy { it.id }
+                .take(svcConfig.defaultPageSize)
+                .map { it.toApi() }
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        assertThat(response.body!!.stations).containsExactlyInAnyOrderElementsOf(expected)
+        assertThat(response.body!!.meta.totalPages).isEqualTo(4)
     }
 
     @Test

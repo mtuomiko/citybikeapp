@@ -4,7 +4,7 @@
   "description": "City Bike App E2E tests",
   "main": "index.js",
   "scripts": {
-    "test:e2e": "cypress run",
+    "test:e2e": "cypress run --headless",
     "cy:open": "cypress open"
   },
   "author": "MT",

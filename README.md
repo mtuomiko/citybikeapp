@@ -28,7 +28,7 @@ You can change the port in [compose.yml](compose.yml).
       the loading completes.
 3. City Bike App is found at [http://localhost:8080](http://localhost:8080) 
 
-You can pull down the compose setup with `docker compose down`
+You can pull down the compose setup with `docker compose --profile dataloader down -v`
 
 ## Functionality
 

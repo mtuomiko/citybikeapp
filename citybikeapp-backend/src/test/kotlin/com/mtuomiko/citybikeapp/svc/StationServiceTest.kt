@@ -6,7 +6,9 @@ import com.mtuomiko.citybikeapp.dao.StatisticsDao
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.jupiter.api.Test
+import java.sql.SQLException
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -50,5 +52,27 @@ class StationServiceTest {
         assertThat(instantCaptor).hasSize(4)
         assertThat(listOf(instantCaptor[0], instantCaptor[2])).allMatch { it == expectedFrom }
         assertThat(listOf(instantCaptor[1], instantCaptor[3])).allMatch { it == expectedTo }
+    }
+
+    @Test
+    fun `Exception from async scope is propagated`() {
+        val id = 66
+        val date = LocalDateTime.parse("2018-07-03T08:30:15")
+
+        coEvery {
+            statisticsDao.getJourneyStatisticsByStationId(any(), any(), any())
+        } returns mockk(relaxed = true)
+        coEvery {
+            statisticsDao.getTopStationsByStationId(any(), any(), any())
+        } throws SQLException("this is a test")
+
+        val thrown =
+            catchThrowable {
+                stationService.getStationStatistics(stationId = id, from = date, to = date)
+            }
+
+        assertThat(thrown)
+            .isInstanceOf(SQLException::class.java)
+            .hasMessageContaining("this is a test")
     }
 }
