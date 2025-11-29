@@ -48,7 +48,7 @@ class DataLoader : CommandLineRunner {
     private lateinit var validStationIds: List<Int>
     private val charsToTrim = arrayOf(' ', ',', '"') // ignore these leading or trailing chars in text-like fields
 
-    override fun run(vararg args: String?) {
+    override fun run(vararg args: String) {
         //
         logger.info { "Starting data load" }
         try {

@@ -1,7 +1,7 @@
 package com.mtuomiko.citybikeapp
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+import org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
 import org.springframework.boot.runApplication
 
 @SpringBootApplication(exclude = [FlywayAutoConfiguration::class])

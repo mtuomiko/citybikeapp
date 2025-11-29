@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21.0.4_7-jre-alpine
+FROM eclipse-temurin:21.0.8_9-jre-alpine
 WORKDIR /home/app
 COPY build/libs/citybikeapp-0.0.1-SNAPSHOT.jar citybikeapp.jar
 EXPOSE 8080
