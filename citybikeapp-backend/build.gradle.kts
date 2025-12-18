@@ -19,7 +19,7 @@ plugins {
     id("org.springframework.boot") version "4.0.0"
     // fails with detekt kotlin version mismatch without workaround, just using spring-boot-dependencies in deps now
     // id("io.spring.dependency-management") version "1.1.6"
-    id("org.openapi.generator") version "7.8.0"
+    id("org.openapi.generator") version "7.17.0"
     id("org.flywaydb.flyway") version "11.14.1" // match versions with spring bom
     id("org.jooq.jooq-codegen-gradle") version "3.19.28" // match spring jooq
 
@@ -44,7 +44,7 @@ repositories {
 
 dependencies {
     api(platform("org.springframework.boot:spring-boot-dependencies:4.0.0"))
-    api(platform("org.testcontainers:testcontainers-bom:1.20.1"))
+    api(platform("org.testcontainers:testcontainers-bom:2.0.2"))
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -58,7 +58,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 
-    implementation("io.github.oshai:kotlin-logging-jvm:6.0.9")
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.13")
 
     implementation("com.jsoizo:kotlin-csv-jvm:1.10.0") // for dataloader csv parsing
 
@@ -74,8 +74,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("io.mockk:mockk:1.14.6")
 
-    testImplementation("org.testcontainers:junit-jupiter") // from spring bom
-    testImplementation("org.testcontainers:postgresql") // from spring bom
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter") // from spring bom
+    testImplementation("org.testcontainers:testcontainers-postgresql") // from spring bom
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation(kotlin("stdlib-jdk8"))
