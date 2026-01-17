@@ -52,7 +52,12 @@ services:
       db:
         condition: service_started
     profiles:
-     - dataloader
+      - dataloader
+    # just to avoid downloading sample data files every time
+    volumes:
+      - type: bind
+        source: docker/temp
+        target: /home/app/temp
   db:
     image: postgres:15
     environment:
