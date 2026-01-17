@@ -10,10 +10,8 @@ import org.jooq.DSLContext
 import org.jooq.SortField
 import org.jooq.impl.DSL.concat
 import org.jooq.impl.DSL.count
-import org.jooq.impl.DSL.field
 import org.jooq.impl.DSL.inline
 import org.jooq.impl.DSL.lower
-import org.jooq.impl.DSL.select
 import org.springframework.stereotype.Repository
 import java.security.InvalidParameterException
 import java.time.Instant
@@ -44,6 +42,8 @@ class StationRepository(
             .toEntity()
 
     fun findAll(): List<StationEntity> = ctx.selectFrom(STATION).fetch().map { it.toEntity() }
+
+    fun getCount(): Int = ctx.fetchCount(STATION)
 
     fun deleteAll() {
         ctx.delete(STATION).execute()
