@@ -73,8 +73,12 @@ class DataLoader : CommandLineRunner {
                         "All journeys processed. Total rows $totalJourneyRows, valid rows $validJourneyRows"
                     }
                 }
+            val currentStationCount = stationRepository.getCount()
+            val currentJourneyCount = journeyRepository.getCount()
             val duration = Duration.ofMillis(millis)
             logger.info { "Data load complete in ${duration.toMinutes()}m and ${duration.toSecondsPart()}s" }
+            logger.info { "Current stations count $currentStationCount" }
+            logger.info { "Current journeys count $currentJourneyCount" }
         } finally {
             if (Environments.PROD.id in environment.activeProfiles) fileProvider.deleteFiles()
         }
@@ -82,16 +86,18 @@ class DataLoader : CommandLineRunner {
 
     private fun processStations(url: String) {
         logger.info { "Processing stations" }
-
+        var stationRows = 0
         val path = fileProvider.getByURI(url)
 
         reader.open(path.inputStream()) {
             readAllWithHeaderAsSequence()
                 .mapNotNull { parseStation(it) }
+                .onEach { stationRows++ }
                 .chunked(config.batchSize)
                 .forEach { stationRepository.saveInBatchIgnoringConflicts(it) }
         }
-        logger.info { "Stations loaded" }
+        val stationCount = stationRepository.getCount()
+        logger.info { "Stations loaded: rows in origin data $stationRows, current station count $stationCount" }
     }
 
     private fun processJourneys(url: String): JourneyStats {
@@ -116,8 +122,10 @@ class DataLoader : CommandLineRunner {
                     }
                 }
         }
-
-        logger.info { "${path.fileName}: done. Total rows $journeyRows, valid rows $validJourneyRows" }
+        val currentJourneyCount = journeyRepository.getCount()
+        logger.info { "${path.fileName}: done." }
+        logger.info { "Origin data total rows $journeyRows, valid rows $validJourneyRows." }
+        logger.info { "Current total journeys $currentJourneyCount" }
         return JourneyStats(journeyRows, validJourneyRows)
     }
 
